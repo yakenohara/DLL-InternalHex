@@ -161,12 +161,12 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CheckNumeralString.cpp" />
+    <ClCompile Include="CheckNumeralString.c" />
     <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="GetInternalHexFromOperand.cpp" />
+    <ClCompile Include="GetInternalHexFromOperand.c" />
     <ClCompile Include="InternalHex.cpp" />
-    <ClCompile Include="IsBigEndian.cpp" />
-    <ClCompile Include="SetInternalHexToOperand.cpp" />
+    <ClCompile Include="IsBigEndian.c" />
+    <ClCompile Include="SetInternalHexToOperand.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Source_x64.def" />

@@ -1,9 +1,4 @@
-﻿  CheckNumeralString.cpp
-  dllmain.cpp
-  GetInternalHexFromOperand.cpp
+﻿  SetInternalHexToOperand.c
   InternalHex.cpp
-  IsBigEndian.cpp
-  SetInternalHexToOperand.cpp
-  コードを生成中...
      ライブラリ D:\InternalHex\Debug\InternalHex_x86.lib とオブジェクト D:\InternalHex\Debug\InternalHex_x86.exp を作成中
   InternalHex.vcxproj -> D:\InternalHex\Debug\InternalHex_x86.dll
