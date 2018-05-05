@@ -1,4 +1,1 @@
-﻿  SetInternalHexToOperand.c
-  InternalHex.cpp
-     ライブラリ D:\InternalHex\Debug\InternalHex_x86.lib とオブジェクト D:\InternalHex\Debug\InternalHex_x86.exp を作成中
-  InternalHex.vcxproj -> D:\InternalHex\Debug\InternalHex_x86.dll
+﻿  InternalHex.vcxproj -> D:\DLL-InternalHex\Debug\InternalHex_x86.dll
