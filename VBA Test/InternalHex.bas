@@ -1,7 +1,8 @@
 Attribute VB_Name = "InternalHex"
-'todo インポートするdllをx64とx86で呼び分ける
-
 'dllインポート
+
+#If Win64 Then
+
 Private Declare PtrSafe Function convDecStrToOperandAndGetInternalHex _
                         Lib "InternalHex_x64.dll" _
                             (ByVal toWriteStr As String, _
@@ -22,6 +23,31 @@ Private Declare PtrSafe Function operateArithmeticByInternalHex _
 Private Declare PtrSafe Function getSizeOfOperandExp _
                         Lib "InternalHex_x64.dll" _
                             (ByVal typ As Long) As Long
+
+#Else
+
+Private Declare Function convDecStrToOperandAndGetInternalHex _
+                        Lib "InternalHex_x86.dll" _
+                            (ByVal toWriteStr As String, _
+                             ByVal lenOfToWriteStr As Long, _
+                             ByVal toConvStr As String, _
+                             ByVal lenOfToConvStr As Long, _
+                             ByVal typ As Long) As Long
+
+Private Declare Function operateArithmeticByInternalHex _
+                        Lib "InternalHex_x86.dll" _
+                            (ByVal val1 As String, _
+                             ByVal val2 As String, _
+                             ByVal sum As String, _
+                             ByVal lenOfSum As Long, _
+                             ByVal operandType As Long, _
+                             ByVal operateType As Long) As Long
+
+Private Declare Function getSizeOfOperandExp _
+                        Lib "InternalHex_x86.dll" _
+                            (ByVal typ As Long) As Long
+                            
+#End If
 
 '定数
 Const BUF_SIZE As Long = 255 'バッファ文字列長
