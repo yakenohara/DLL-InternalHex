@@ -1,0 +1,5 @@
+LIBRARY "InternalHex_x86"
+EXPORTS
+  convDecStrToOperandAndGetInternalHex
+  operateArithmeticByInternalHex
+  getSizeOfOperandExp
