@@ -1,6 +1,6 @@
 Attribute VB_Name = "NumericString"
 'wish
-'n進数計算ができるようにしたい
+'n進数乗除算ができるようにしたい
 
 Public Const DOT As String = "." '小数点表記
 
@@ -232,7 +232,10 @@ End Function
 '
 '2数を加算する
 '
-Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) As Variant
+'radix
+'   2~16 のみ
+'
+Public Function addNPntNPnt(ByVal value1 As String, ByVal value2 As String, Optional ByVal radix As Byte = 10) As Variant
     
     Dim intPrtOfVal1 As String
     Dim frcPrtOfVal1 As String
@@ -248,20 +251,27 @@ Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) 
     
     Dim substitutionWasMinus As Boolean
     
-    'val1の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(value1, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1, 10)
+    '基数チェック
+    If (radix < 2) Or (16 < radix) Then
+        addNPntNPnt = CVErr(xlErrValue) '#VALUE!を返却
+        Exit Function
+        
+    End If
     
-    If (retOfSeparatePnt <> 0) Then 'val1は10進値として不正
-        addDecPntDecPnt = addDecPntDecPnt
+    'val1の文字列チェック&小数、整数分解
+    retOfSeparatePnt = separateToIntAndFrc(value1, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1, radix)
+    
+    If (retOfSeparatePnt <> 0) Then 'val1はn進値として不正
+        addNPntNPnt = CVErr(xlErrValue) '#VALUE!を返却
         Exit Function
         
     End If
     
     'valwの文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(value2, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2, 10)
+    retOfSeparatePnt = separateToIntAndFrc(value2, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2, radix)
     
-    If (retOfSeparatePnt <> 0) Then 'val2は10進値として不正
-        addDecPntDecPnt = addDecPntDecPnt
+    If (retOfSeparatePnt <> 0) Then 'val2はn進値として不正
+        addNPntNPnt = CVErr(xlErrValue) '#VALUE!を返却
         Exit Function
         
     End If
@@ -283,11 +293,11 @@ Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) 
     '加算or減算
     If (isMinusOfVal1) Then 'value1はマイナス値
         If (isMinusOfVal2) Then 'value2はマイナス値
-            tmpVal = addition(tmpVal1, tmpVal2)
+            tmpVal = addition(tmpVal1, tmpVal2, radix)
             toRetSign = "-"
             
         Else 'value2はプラス値
-            tmpVal = substitution(tmpVal1, tmpVal2, substitutionWasMinus)
+            tmpVal = substitution(tmpVal1, tmpVal2, substitutionWasMinus, radix)
             If (substitutionWasMinus) Then
                 toRetSign = ""
             Else
@@ -298,7 +308,7 @@ Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) 
         
     Else 'value1はプラス値
         If (isMinusOfVal2) Then 'value2はマイナス値
-            tmpVal = substitution(tmpVal1, tmpVal2, substitutionWasMinus)
+            tmpVal = substitution(tmpVal1, tmpVal2, substitutionWasMinus, radix)
             If (substitutionWasMinus) Then
                 toRetSign = "-"
             Else
@@ -306,7 +316,7 @@ Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) 
             End If
             
         Else 'value2はプラス値
-            tmpVal = addition(tmpVal1, tmpVal2)
+            tmpVal = addition(tmpVal1, tmpVal2, radix)
             toRetSign = ""
         
         End If
@@ -322,7 +332,7 @@ Public Function addDecPntDecPnt(ByVal value1 As String, ByVal value2 As String) 
         frcPrt = Left(frcPrt, Len(frcPrt) - 1)
     Loop
     
-    addDecPntDecPnt = toRetSign & intPrt & IIf(frcPrt = "", "", DOT & frcPrt)
+    addNPntNPnt = toRetSign & intPrt & IIf(frcPrt = "", "", DOT & frcPrt)
 
 End Function
 
@@ -513,7 +523,7 @@ Private Function separateToIntAndFrc(ByVal pnt As String, ByRef intPrt As String
     
     '字列長チェック
     If (Len(pnt) < 1) Then '文字列長が0
-        separateToIntAndFrc = CVErr(xlErrValue) '#NUM!を返す
+        separateToIntAndFrc = CVErr(xlErrValue) '#VALUE!を返す
         Exit Function
         
     End If
@@ -669,7 +679,7 @@ End Function
 '
 '2数を和算する
 '
-Private Function addition(ByVal val1 As String, ByVal val2 As String, Optional ByVal fill0Left As Boolean = True) As String
+Private Function addition(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte, Optional ByVal fill0Left As Boolean = True) As String
     
     Dim lenOfVal1 As Long
     Dim lenOfVal2 As Long
@@ -723,8 +733,20 @@ Private Function addition(ByVal val1 As String, ByVal val2 As String, Optional B
     
     'additionループ
     For idxOfVal = lenOfVal1 To 1 Step -1
-        tmpStr = Format(CInt(Mid(val1, idxOfVal, 1)) + CInt(Mid(val2, idxOfVal, 1)) + carrier, "00")
-        carrier = CInt(Left(tmpStr, 1))
+        
+        tmpDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1))
+        tmpDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1))
+        
+        tmpStr = convDecIntToNIntStr(tmpDigitOfVal1 + tmpDigitOfVal2 + carrier, radix)
+        
+        If (Len(tmpStr) = 2) Then '桁が増えたか
+            carrier = 1
+            
+        Else
+            carrier = 0
+            
+        End If
+        
         stringBuilder(idxOfVal - 1) = Right(tmpStr, 1)
         
     Next idxOfVal
@@ -743,7 +765,7 @@ End Function
 '
 'val1からval2を減算する
 '
-Private Function substitution(ByVal val1 As String, ByVal val2 As String, ByRef minus As Boolean) As String
+Private Function substitution(ByVal val1 As String, ByVal val2 As String, ByRef minus As Boolean, ByVal radix As Byte) As String
     
     '変数宣言
     Dim lenOfVal1 As Long
@@ -782,8 +804,8 @@ Private Function substitution(ByVal val1 As String, ByVal val2 As String, ByRef 
     val1IsLarger = 0
     idxMxOfVal = Len(val1)
     Do
-        val1Digit = CInt(Mid(val1, idxOfVal, 1))
-        val2Digit = CInt(Mid(val2, idxOfVal, 1))
+        val1Digit = convNCharToByte(Mid(val1, idxOfVal, 1))
+        val2Digit = convNCharToByte(Mid(val2, idxOfVal, 1))
         
         'どちらかが大きかったら break
         If val1Digit > val2Digit Then
@@ -827,27 +849,27 @@ Private Function substitution(ByVal val1 As String, ByVal val2 As String, ByRef 
     carrier = 0
     For idxOfVal = idxMxOfVal To 1 Step -1
         
-        val1Digit = CInt(Mid(val1, idxOfVal, 1))
-        val2Digit = CInt(Mid(val2, idxOfVal, 1))
+        val1Digit = convNCharToByte(Mid(val1, idxOfVal, 1))
+        val2Digit = convNCharToByte(Mid(val2, idxOfVal, 1))
         
         '繰り下がりチェック
         If val1Digit = 0 And carrier = -1 Then
             carrier = -1
-            val1Digit = 9
+            val1Digit = radix - 1
             
         Else
             val1Digit = val1Digit + carrier
             carrier = 0
             
             If (val1Digit < val2Digit) Then
-                val1Digit = 10 + val1Digit
+                val1Digit = radix + val1Digit
                 carrier = -1
                 
             End If
             
         End If
         
-        stringBuilder(idxOfVal - 1) = CStr(val1Digit - val2Digit)
+        stringBuilder(idxOfVal - 1) = convDecIntToNIntStr(val1Digit - val2Digit, radix)
         
     Next idxOfVal
     
@@ -1141,7 +1163,7 @@ Private Function convFrcPrtOfBinPntToFrcPrtOfDecPnt(ByVal frcPt As String) As St
     '生成ループ
     For cnt = 1 To lpMx
         If (Mid(frcPt, cnt, 1) = "1") Then
-            decStr = addition(minusNpowerOf2, decStr, False)
+            decStr = addition(minusNpowerOf2, decStr, 10, False)
         End If
         
         minusNpowerOf2 = divide(minusNpowerOf2, 2, 1)
@@ -1177,7 +1199,7 @@ Private Function convIntPrtOfBinToIntPrtOfDecPrt(ByVal intPt As String) As Strin
     For cnt = Len(intPt) To 1 Step -1
         
         If (Mid(intPt, cnt, 1) = "1") Then
-            decStr = addition(nPowerOf2, decStr, True)
+            decStr = addition(nPowerOf2, decStr, 10, True)
         End If
         
         nPowerOf2 = multiple(nPowerOf2, 2)
@@ -1212,4 +1234,98 @@ Private Function invertStringArray(ByRef srcArr() As String) As String()
 End Function
 
 
+'
+'数値文字が10進値でいくつかを返す
+'
+Private Function convNCharToByte(ByVal ch As String) As Byte
+    
+    Dim toRetByte As Byte
+    Dim ascOfA As Integer
+    Dim ascOfF As Integer
+    
+    '
+    '有効数値文字かどうかはチェックしない
+    '
+    
+    ascOfA = Asc("A")
+    ascOfF = Asc("F")
+    ascOfCh = Asc(ch)
+    
+    If (ascOfA <= ascOfCh) And (ascOfCh <= ascOfF) Then 'A~Fの場合
+        toRetByte = 10 + (ascOfCh - ascOfA)
+    
+    Else '0~9の場合
+        toRetByte = CByte(ch)
+    
+    End If
+    
+    convNCharToByte = toRetByte
+    
+End Function
+
+'
+'10進数をn進数に変換する
+'
+'radix:
+'    2~16 のみ
+'
+Private Function convDecIntToNIntStr(ByVal decInt As Long, ByVal radix As Byte) As String
+    
+    Dim stringBuilder() As String '変換後文字列生成用
+    Dim sizeOfStringBuilder As Long
+    Dim rm As Long
+    
+    If (radix = 10) Then '10進→10進変換だったら
+        convDecIntToNIntStr = CStr(decInt) '文字列変換して返す
+        Exit Function
+        
+    End If
+    
+    If (decInt = 0) Then '"0"だったら
+        convDecIntToNIntStr = "0"
+        Exit Function
+        
+    End If
+    
+    sizeOfStringBuilder = 0
+    rm = decInt
+    
+    'bit生成
+    Do While (decInt >= radix) '基数で割れる数か余っている間
+        
+        rm = decInt Mod radix
+        
+        ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
+        
+        If (rm > 9) Then 'A~Fに該当する数値の場合
+            
+            stringBuilder(sizeOfStringBuilder) = Chr((rm - 10) + Asc("A"))
+            
+        Else '0~9に該当する数値の場合
+            
+            stringBuilder(sizeOfStringBuilder) = CStr(rm)
+        
+        End If
+        
+        sizeOfStringBuilder = sizeOfStringBuilder + 1
+        
+        decInt = decInt \ radix
+        
+    Loop
+    
+    '最上位Bit付加
+    ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
+    If (rm > 9) Then 'A~Fに該当する数値の場合
+            
+        stringBuilder(sizeOfStringBuilder) = Chr((decInt - 10) + Asc("A"))
+        
+    Else '0~9に該当する数値の場合
+        
+        stringBuilder(sizeOfStringBuilder) = CStr(decInt)
+    
+    End If
+    
+    convDecIntToNIntStr = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
+    
+End Function
 
