@@ -526,6 +526,7 @@ Public Function divideNPntByOneDig(ByVal dividend As String, ByVal divisorCh As 
     Dim retOfDivide As String
     
     Dim rm As String
+    Dim errOfDvide As Variant
     
     '除数の文字列チェック&小数、整数分解
     retOfSeparatePnt = separateToIntAndFrc(divisorCh, intPrtOfDivisor, frcPrtOfDivisor, divisorIsMinus, radix)
@@ -565,7 +566,13 @@ Public Function divideNPntByOneDig(ByVal dividend As String, ByVal divisorCh As 
     End If
     
     '除算
-    retOfDivide = divideByOneDig(intPrtOfDividend & frcPrtOfDividend, intPrtOfDivisor, rm, limitOfRepTimes, radix)
+    retOfDivide = divide(intPrtOfDividend & frcPrtOfDividend, intPrtOfDivisor, rm, limitOfRepTimes, radix, errOfDvide)
+    
+    If (retOfDivide = "") Then 'オーバーフローの場合
+        divideNPntByOneDig = errOfDvide
+        Exit Function
+        
+    End If
     
     intPrtOfAns = Left(retOfDivide, Len(intPrtOfDividend))
     frcPrtOfAns = Right(retOfDivide, Len(retOfDivide) - Len(intPrtOfDividend))
@@ -1089,44 +1096,77 @@ Private Function multipleByOneDig(ByVal multiplicand As String, ByVal multiplier
 End Function
 
 '
-'1桁数値による除算をする
+'除算をする
 '
-'limitOfRepTimes:
-'    Indivisible Numberに対するdivide回数制限
-'    (-)値を設定した場合は、無限に割り続ける
+'以下の場合は空文字を返却し、
+'errCodeにエラーコードを格納する
+'    ┣0割の場合。(エラーコードは#DIV/0!)
+'    ┗dividend / divisor にlong型で取り扱えない大きな数値がある場合。(エラーコードは#NUM!)
+'
 'remainder
 '    剰余。
 '    小数点以下となる場合は、
 '    一番左を1桁目として小数点を取り除いた小数文字列となる。
 '    ex:)
-'    【前提】10 / 8 = 1.2 + 0.4
-'    【実行方法】x = divideByOneDig("10", "8", rm, 1, 10)
+'    【前提】10 / 8 = 1.2 余り 0.4
+'    【実行方法】x = divide("10", "8", rm, 1, 10, code)
 '    【結果】 x:012
 '            rm:04
 '
-Private Function divideByOneDig(ByVal dividend As String, ByVal divisorCh As String, ByRef remainder As String, ByVal limitOfRepTimes As Long, ByVal radix As Byte) As String
+'limitOfRepTimes:
+'    Indivisible Numberに対するdivide回数制限
+'    (-)値を設定した場合は、無限に割り続ける
+'
+Private Function divide(ByVal dividend As String, ByVal divisor As String, ByRef remainder As String, ByVal limitOfRepTimes As Long, ByVal radix As Byte, ByRef errCode As Variant) As String
 
     '変数宣言
-    Dim divisor As Byte
-    Dim quot As Byte   '商
-    Dim rmnd As Byte '余り
+    Dim quot As Long '商
+    Dim rmnd As Long '余り
     
     Dim repTimes As Long 'IndivisibleNumberに対するdivide回数
     
-    Dim digitOfDividend As Byte '一時被除数
+    Dim digitOfDividend As Long '一時被除数
     
     Dim stringBuilder() As String '商格納用
     Dim stringBuilderRM() As String '剰余格納用
     Dim digitIdxOfDividend As Long 'Division結果文字列長
     
+    Dim divisorDec As Long
+    
+    Dim dividingFrc As Boolean
+    
     '
-    'dividendが有効なn進値であるかはチェックしない
-    'divisorは1桁であることはチェックしない
+    'dividend, divisor が有効なn進値であるかはチェックしない
     '
     
+    'divisorの不要な0を取り除く
+    Do While (Left(divisor, 1) = "0")
+        divisor = Right(divisor, Len(divisor) - 1)
+        
+    Loop
+    
+    If divisor = "" Then '全部0だったら
+        divide = ""
+        errCode = CVErr(xlErrNum) '#NUM!を返す
+        Exit Function
+        
+    End If
+    
+    'divisorの10進変換
+    tmp = convIntPrtOfNPntToIntPrtOfDecPnt(divisor, radix)
+    
+    'divisorのLong型変換
+    On Error GoTo OVERFLOW
+    divisorDec = CLng(tmp)
+    
     '1割チェック
-    If divisorCh = "1" Then
-        divideByOneDig = dividend '1割の場合はそのまま返す
+    If divisorDec = 1 Then
+        divide = dividend '1割の場合はそのまま返す
+        Exit Function
+        
+    ElseIf divisorDec = 0 Then '0割チェック
+        divide = ""
+        errCode = CVErr(xlErrDiv0) '#DIV0!を返す
         Exit Function
         
     End If
@@ -1135,16 +1175,15 @@ Private Function divideByOneDig(ByVal dividend As String, ByVal divisorCh As Str
     rmnd = 0
     digitIdxOfDividend = 1
     repTimes = 0
-    remainder = ""
     
-    divisor = convNCharToByte(divisorCh)
+    dividingFrc = False '小数点以下に対する割り算に突入したか
     
     '実行ループ
     Do
         digitOfDividend = rmnd * radix + convNCharToByte(Mid(dividend, digitIdxOfDividend, 1)) '上位桁の余り & 該当桁
         
-        quot = digitOfDividend \ divisor '商
-        rmnd = digitOfDividend Mod divisor '余り
+        quot = digitOfDividend \ divisorDec '商
+        rmnd = digitOfDividend Mod divisorDec '余り
         
         ReDim Preserve stringBuilder(digitIdxOfDividend - 1) '領域拡張
         stringBuilder(digitIdxOfDividend - 1) = convIntPrtOfDecPntToIntPrtOfNPnt(quot, radix) '商を追記
@@ -1152,7 +1191,7 @@ Private Function divideByOneDig(ByVal dividend As String, ByVal divisorCh As Str
         digitIdxOfDividend = digitIdxOfDividend + 1
         
         If (rmnd > 0) And (Len(dividend) < digitIdxOfDividend) Then '余りがあるけれど、次の桁が無い
-            
+        
             If (limitOfRepTimes > -1) And (repTimes < limitOfRepTimes) Then '再帰計算回数が指定回数以下
                 dividend = dividend & "0" '"0"を付加
                 
@@ -1178,8 +1217,14 @@ Private Function divideByOneDig(ByVal dividend As String, ByVal divisorCh As Str
     
     End If
     
-    divideByOneDig = Join(stringBuilder, vbNullString) '文字列連結
+    divide = Join(stringBuilder, vbNullString) '文字列連結
     
+    Exit Function
+    
+OVERFLOW: 'オーバーフローの場合
+    divide = ""
+    errCode = CVErr(xlErrNum) '#NUM!を返す
+    Exit Function
     
 End Function
 
@@ -1194,6 +1239,7 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
     Dim stringBuilder() As String '変換後文字列生成用
     Dim sizeOfStringBuilder As Long
     Dim rm As String
+    Dim errOfDvide As Variant
     
     '
     '有効10進数値文字列かどうかはチェックしない
@@ -1235,7 +1281,7 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
         
     End If
     
-    'bit生成
+    '字列生成
     Do While True
         
         If (Len(decInt) <= strLenOfRadix) Then
@@ -1246,7 +1292,8 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
             End If
         End If
         
-        decInt = divideByOneDig(decInt, strOfRadix, rm, 0, 10)
+        decInt = divide(decInt, strOfRadix, rm, 0, 10, errOfDvide)
+        'オーバーフローは発生し得ない
         
         '左側の不要な"0"を取り除く
         Do While Left(decInt, 1) = "0"
@@ -1383,6 +1430,46 @@ Private Function convIntPrtOfBinToIntPrtOfDecPrt(ByVal intPt As String) As Strin
 End Function
 
 '
+'n進整数部分から10進整数部分に変換する
+'
+Private Function convIntPrtOfNPntToIntPrtOfDecPnt(ByVal intPt As String, ByVal radix As Byte) As String
+    
+    Dim xPowerOfRadix As String
+    Dim decStr As String
+    
+    '
+    '有効n進文字列かどうかはチェックしない
+    '
+    
+    '引数チェック
+    If (intPt = "") Then '空文字指定の場合
+        convIntPrtOfNPntToIntPrtOfDecPnt = "0" '"0"を返す
+        Exit Function
+        
+    End If
+    
+    strOfRadix = CStr(radix)
+    xPowerOfRadix = "1"
+    decStr = "0"
+    
+    For cnt = Len(intPt) To 1 Step -1
+        ch = Mid(intPt, cnt, 1)
+        
+        If (ch <> "0") Then
+            tmp = multiple(xPowerOfRadix, CStr(convNCharToByte(ch)), 10)
+            decStr = add(decStr, tmp, 10, True)
+            
+        End If
+        
+        xPowerOfRadix = multiple(xPowerOfRadix, strOfRadix, 10)
+        
+    Next cnt
+    
+    convIntPrtOfNPntToIntPrtOfDecPnt = decStr
+    
+End Function
+
+'
 '2進小数部分から10進小数部分に変換する
 '
 Private Function convFrcPrtOfBinPntToFrcPrtOfDecPnt(ByVal frcPt As String) As String
@@ -1393,6 +1480,7 @@ Private Function convFrcPrtOfBinPntToFrcPrtOfDecPnt(ByVal frcPt As String) As St
     Dim minusNpowerOf2 As String
     
     Dim rm As String
+    Dim errOfDvide As Variant
     
     '
     '有効2進文字列かどうかはチェックしない
@@ -1415,11 +1503,95 @@ Private Function convFrcPrtOfBinPntToFrcPrtOfDecPnt(ByVal frcPt As String) As St
             decStr = add(minusNpowerOf2, decStr, 10, False)
         End If
         
-        minusNpowerOf2 = divideByOneDig(minusNpowerOf2, "2", rm, 1, 10)
+        minusNpowerOf2 = divide(minusNpowerOf2, "2", rm, 1, 10, errOfDvide)
+        'オーバーフローは発生し得ない
         
     Next cnt
     
     convFrcPrtOfBinPntToFrcPrtOfDecPnt = decStr
+    
+End Function
+
+'
+'n進小数部分から10進小数部分に変換する
+'
+'numOfSignificantDigits
+'    有効桁数
+'
+'precisionOfConv
+'    変換精度
+'
+'ansIncTrunc
+'    変換誤差があった場合、誤差を含めた最大値
+'
+Private Function convFrcPrtOfNPntToFrcPrtOfDecPnt(ByVal frcPt As String, ByVal radix As Byte, ByVal precisionOfConv As Long, ByRef ansIncTrunc As String) As String
+    
+    Dim lpMx As Long
+    Dim decStr As String
+    
+    Dim minusXpowerOfRadix As String
+    Dim minusXpowerOfRadixT As String
+    
+    Dim rm As String
+    Dim errOfDvide As Variant
+    Dim strOfRadix As String
+    
+    Dim trunc As String '誤差
+    
+    '
+    '有効n進文字列かどうかはチェックしない
+    '変換精度がマイナスかどうかはチェックしない
+    '
+    
+    '引数チェック
+    If (frcPt = "") Then '空文字指定の場合
+        convFrcPrtOfNPntToFrcPrtOfDecPnt = "0" '"0"を返す
+        Exit Function
+        
+    End If
+    
+    strOfRadix = CStr(radix)
+    lpMx = Len(frcPt)
+    decStr = "0"
+    trunc = "0"
+    
+    tmp = divide("1", strOfRadix, rm, precisionOfConv, 10, errOfDivide)
+    'オーバーフローは発生し得ない
+    minusXpowerOfRadix = Right(tmp, Len(tmp) - 1) '一番左の0を取り除く
+    
+    If (rm <> "0") Then
+        rm = Right(rm, Len(rm) - 1) '小数点以下部分のみにする
+        
+    End If
+    
+    minusXpowerOfRadixT = add(minusXpowerOfRadix, rm, 10, False)
+    
+    '生成ループ
+    For cnt = 1 To lpMx
+        tmpCh = Mid(frcPt, cnt, 1)
+        
+        If (tmpCh <> "0") Then
+            decOfTmpCh = convNCharToByte(tmpCh)
+            toAdd = multiple(minusXpowerOfRadix, decOfTmpCh, 10)
+            decStr = add(toAdd, decStr, 10, False)
+            
+            toAdd = multiple(minusXpowerOfRadixT, decOfTmpCh, 10)
+            trunc = add(toAdd, trunc, 10, False)
+            
+        End If
+        
+        minusXpowerOfRadix = divide(minusXpowerOfRadix, strOfRadix, rm, precisionOfConv, 10, errOfDvide)
+        'オーバーフローは発生し得ない
+        
+        minusXpowerOfRadixT = divide(minusXpowerOfRadixT, strOfRadix, rm, precisionOfConv, 10, errOfDvide)
+        'オーバーフローは発生し得ない
+        
+        minusXpowerOfRadixT = add(minusXpowerOfRadixT, rm, 10, False)
+        
+    Next cnt
+    
+    ansIncTrunc = trunc
+    convFrcPrtOfNPntToFrcPrtOfDecPnt = decStr
     
 End Function
 
@@ -1498,6 +1670,4 @@ Private Function convByteToNChar(ByVal byt As Byte) As String
     convByteToNChar = toRetStr
     
 End Function
-
-
 
