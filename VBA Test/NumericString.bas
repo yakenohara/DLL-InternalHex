@@ -9,8 +9,14 @@ Const DEFAULT_DIV_TIMES_FOR_INDIVISIBLE As Long = 255
 '10進→n進変換時の、小数部分の限界算出桁数
 Const DEFAULT_FRC_DIGITS As Long = 255
 
+'n進小数→10進小数変換時の変換精度
+Const PREC_OF_CONV As Long = 255
+
 '
 'n進文字列を指定桁数分シフトする
+'
+'radix
+'    基数(2~16まで)
 '
 Public Function shiftNumeralPnt(ByVal str As String, ByVal shift As Long, Optional radix As Byte = 10) As Variant
     
@@ -40,7 +46,7 @@ Public Function shiftNumeralPnt(ByVal str As String, ByVal shift As Long, Option
     End If
     
     'チェック
-    ret = checkNumeralPntStr(str, idxOfDot, radix)
+    ret = checkNumeralPntStr(str, radix, idxOfDot)
     
     If (ret = (Len(str) + 1)) Then 'n進文字列だった場合
         
@@ -108,7 +114,7 @@ Public Function isNumeralPnt(ByVal decStr As String, Optional radix As Byte = 10
     Dim toRet As Boolean
     
     'チェック
-    ret = checkNumeralPntStr(decStr, idxOfDot, radix)
+    ret = checkNumeralPntStr(decStr, radix, idxOfDot)
     
     If (ret = (Len(decStr) + 1)) Then 'n進文字列だった場合
         toRet = True
@@ -151,10 +157,10 @@ Public Function convDecPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, Op
         
     End If
     
-    'val1の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(pntStr, intPtOfBefore, frcPtOfBefore, isMinus, 10)
+    'pntStrの文字列チェック&小数、整数分解
+    retOfSeparatePnt = separateToIntAndFrc(pntStr, 10, intPtOfBefore, frcPtOfBefore, isMinus)
     
-    If (retOfSeparatePnt <> 0) Then 'val1はn進値として不正
+    If (retOfSeparatePnt <> 0) Then 'pntStrはn進値として不正
         convDecPntToNPnt = CVErr(xlErrValue) '#VALUE!を返却
         Exit Function
         
@@ -194,7 +200,7 @@ Public Function convDecPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, Op
         frcPtOfAfter = ""
         
     Else '小数部が存在する場合
-        frcPtOfAfter = convFrcPrtOfDecPntToFrcPrtOfNPnt(frcPtOfBefore, numOfDigits, radix)
+        frcPtOfAfter = convFrcPrtOfDecPntToFrcPrtOfNPnt(frcPtOfBefore, radix, numOfDigits)
         
         If (frcPtOfAfter <> "") Then
             frcPtOfAfter = DOT & frcPtOfAfter
@@ -209,87 +215,102 @@ Public Function convDecPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, Op
 End Function
 
 '
-'小数付き2進値から小数付き10進値に変換する
+'小数付きn進値から小数付き10進値に変換する
 '
-Public Function convBinPntToDecPnt(ByVal binStr As String) As Variant
-    
-    convBinPntToDecPnt = convNPntToNPnt(binStr, 2, -1)
-    
-End Function
-
+'radix
+'    基数(2~16まで)
 '
-'10進⇔2進変換用共通関数
+'precisionOfConv
+'    変換精度
+'    ex:)
+'    【前提】0.01(3進数) = 0.111111111111..(10進数)←1の繰り返し
+'    【実行方法】convNPntToDecPnt("0.01", 3, precOfConv)
+'    【結果】
+'            precOfConv=2で実行した場合: 返却値:0.11
+'            precOfConv=3で実行した場合: 返却値:0.111
 '
-Private Function convNPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, numOfDigits As Long) As Variant
+Public Function convNPntToDecPnt(ByVal pntStr As String, ByVal radix As Byte, Optional precisionOfConv As Long = PREC_OF_CONV) As Variant
 
     Dim intPtOfBefore As String '整数部
     Dim frcPtOfBefore As String '小数部
     
     Dim intPtOfAfter As String '整数部
     Dim frcPtOfAfter As String '小数部
+    Dim isMinus As Boolean
     Dim sign As String '符号
     
     Dim ret As Long
     Dim idxOfDot As Long
     
-    '引数チェック
-    If (Len(pntStr) = 0) Then
-        convNPntToNPnt = CVErr(xlErrValue) '#VALUE!を返却
+    Dim retOfSeparatePnt As Variant
+    
+    Dim ansIT As String
+    
+    '基数チェック
+    If (radix < 2) Or (16 < radix) Then
+        convNPntToDecPnt = CVErr(xlErrValue) '#VALUE!を返却
         Exit Function
         
     End If
     
-    'マイナス値チェック
-    If (Left(pntStr, 1) = "-") Then
-        If (Len(pntStr) < 2) Then
-            convNPntToNPnt = CVErr(xlErrNum) '#NUM!を返却
-            Exit Function
-        End If
+    '変換精度チェック
+    If (precisionOfConv < 0) Then
+        convNPntToDecPnt = CVErr(xlErrValue) '#VALUE!を返却
+        Exit Function
         
+    End If
+    
+    'pntStrの文字列チェック&小数、整数分解
+    retOfSeparatePnt = separateToIntAndFrc(pntStr, radix, intPtOfBefore, frcPtOfBefore, isMinus)
+    
+    If (retOfSeparatePnt <> 0) Then 'pntStrはn進値として不正
+        convNPntToDecPnt = CVErr(xlErrValue) '#VALUE!を返却
+        Exit Function
+        
+    End If
+    
+    '整数部の不要な0を取り除く
+    Do While (Left(intPtOfBefore, 1) = "0")
+        intPtOfBefore = Right(intPtOfBefore, Len(intPtOfBefore) - 1)
+        
+    Loop
+    
+    If (intPtOfBefore = "") Then '全部"0"だったら
+        intPtOfBefore = "0"
+        
+    End If
+    
+    '少数部の不要な0を取り除く
+    Do While (Right(frcPtOfBefore, 1) = "0")
+        frcPtOfBefore = Left(frcPtOfBefore, Len(frcPtOfBefore) - 1)
+        
+    Loop
+    
+    If (precisionOfConv = 0) Then '小数点以下の求める精度が0桁の場合
+        frcPtOfBefore = ""
+        
+    End If
+    
+    'マイナス値チェック
+    If (isMinus) Then
         sign = "-"
-        pntStr = Right(pntStr, Len(pntStr) - 1)
         
     Else
         sign = ""
         
     End If
     
-    '数値列かどうかチェック
-    ret = checkNumeralPntStr(pntStr, idxOfDot, radix)
+    '整数部変換
+    intPtOfAfter = convIntPrtOfNPntToIntPrtOfDecPnt(intPtOfBefore, radix)
     
-    If (ret <> (Len(pntStr) + 1)) Then '文字列はn進値ではない
-        convNPntToNPnt = CVErr(xlErrNum) '#NUM!を返却
-        Exit Function
-        
-    End If
-    
-    '整数部&小数部分解
-    intPtOfBefore = Left(pntStr, idxOfDot - 1)
-    
-    '整数部を2進変換
-    If (radix = 2) Then
-        intPtOfAfter = convIntPrtOfBinToIntPrtOfDecPrt(intPtOfBefore) '2進数が変換対象の時
-        
-    Else
-        intPtOfAfter = convIntPrtOfDecPntToIntPrtOfNPnt(intPtOfBefore, 2) '10進数が変換対象の時
-        
-    End If
-    
-    If (idxOfDot = ret) Then '小数部は存在しない場合
-        frcPtOfBefore = ""
+    '小数部をn進変換
+    If (frcPtOfBefore = "") Then '小数部は存在しない場合
         frcPtOfAfter = ""
         
     Else '小数部が存在する場合
-        frcPtOfBefore = Right(pntStr, Len(pntStr) - idxOfDot)
+        frcPtOfAfter = convFrcPrtOfNPntToFrcPrtOfDecPnt(frcPtOfBefore, radix, precisionOfConv, ansIT)
         
-        '小数部を2進変換
-        If (radix = 2) Then
-            frcPtOfAfter = convFrcPrtOfBinPntToFrcPrtOfDecPnt(frcPtOfBefore) '2進数が変換対象の時
-        Else
-            frcPtOfAfter = convFrcPrtOfDecPntToFrcPrtOfNPnt(frcPtOfBefore, numOfDigits, 2) '10進数が変換対象の時
-        End If
-        
-        If frcPtOfAfter <> "" Then '小数点付加が必要な場合
+        If (frcPtOfAfter <> "") Then
             frcPtOfAfter = DOT & frcPtOfAfter
             
         End If
@@ -297,8 +318,17 @@ Private Function convNPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, num
     End If
     
     '文字列結合
-    convNPntToNPnt = sign & intPtOfAfter & frcPtOfAfter
+    convNPntToDecPnt = sign & intPtOfAfter & frcPtOfAfter
 
+End Function
+
+'
+'1の補数を得る
+'
+Public Function get1sComplement() As Variant
+    
+    'todo
+    
 End Function
 
 '
@@ -331,7 +361,7 @@ Public Function addNPntNPnt(ByVal value1 As String, ByVal value2 As String, Opti
     End If
     
     'val1の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(value1, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1, radix)
+    retOfSeparatePnt = separateToIntAndFrc(value1, radix, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     
     If (retOfSeparatePnt <> 0) Then 'val1はn進値として不正
         addNPntNPnt = CVErr(xlErrValue) '#VALUE!を返却
@@ -340,7 +370,7 @@ Public Function addNPntNPnt(ByVal value1 As String, ByVal value2 As String, Opti
     End If
     
     'valwの文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(value2, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2, radix)
+    retOfSeparatePnt = separateToIntAndFrc(value2, radix, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
     
     If (retOfSeparatePnt <> 0) Then 'val2はn進値として不正
         addNPntNPnt = CVErr(xlErrValue) '#VALUE!を返却
@@ -369,7 +399,7 @@ Public Function addNPntNPnt(ByVal value1 As String, ByVal value2 As String, Opti
             toRetSign = "-"
             
         Else 'value2はプラス値
-            tmpVal = subtract(tmpVal1, tmpVal2, subtractionWasMinus, radix)
+            tmpVal = subtract(tmpVal1, tmpVal2, radix, subtractionWasMinus)
             If (subtractionWasMinus) Then
                 toRetSign = "-"
             Else
@@ -380,7 +410,7 @@ Public Function addNPntNPnt(ByVal value1 As String, ByVal value2 As String, Opti
         
     Else 'value1はプラス値
         If (isMinusOfVal2) Then 'value2はマイナス値
-            tmpVal = subtract(tmpVal1, tmpVal2, subtractionWasMinus, radix)
+            tmpVal = subtract(tmpVal1, tmpVal2, radix, subtractionWasMinus)
             If (subtractionWasMinus) Then
                 toRetSign = "-"
             Else
@@ -415,7 +445,7 @@ End Function
 'radix
 '    2~16 のみ
 '
-Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplierCh As String, Optional radix As Byte = 10) As Variant
+Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier As String, Optional radix As Byte = 10) As Variant
 
     Dim multiplicandIsMinus As Boolean
     Dim multiplierIsMinus As Boolean
@@ -434,7 +464,7 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplierC
     Dim retOfMultiple As String
     
     '乗数の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(multiplierCh, intPrtOfMultiplier, frcPrtOfMultiplier, multiplierIsMinus, radix)
+    retOfSeparatePnt = separateToIntAndFrc(multiplier, radix, intPrtOfMultiplier, frcPrtOfMultiplier, multiplierIsMinus)
     If (retOfSeparatePnt <> 0) Then 'n進値として不正
         multipleNPntNPnt = retOfSeparatePnt
         Exit Function
@@ -447,7 +477,7 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplierC
     End If
     
     '被乗数の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(multiplicand, intPrtOfMultiplicand, frcPrtOfMultiplicand, multiplicandIsMinus, radix)
+    retOfSeparatePnt = separateToIntAndFrc(multiplicand, radix, intPrtOfMultiplicand, frcPrtOfMultiplicand, multiplicandIsMinus)
     If (retOfSeparatePnt <> 0) Then 'n進値として不正
         multipleNPntNPnt = retOfSeparatePnt
         Exit Function
@@ -502,13 +532,13 @@ End Function
 '
 '1st引数を2nd引数で割る
 '割り切れない時は、3rd引数で指定された回数だけ割った結果を返す
-'2nd引数は1~9のみ可
 '3rd引数が(-)値の場合は際限なく割り続ける
 '
-Public Function divideNPntByOneDig(ByVal dividend As String, ByVal divisorCh As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfRepTimes As Long = DEFAULT_DIV_TIMES_FOR_INDIVISIBLE) As Variant
+'radix
+'    基数(2~16まで)
+'
+Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfRepTimes As Long = DEFAULT_DIV_TIMES_FOR_INDIVISIBLE) As Variant
 
-    Dim divisor As Integer
-    
     Dim dividendIsMinus As Boolean
     Dim divisorIsMinus As Boolean
     
@@ -529,59 +559,90 @@ Public Function divideNPntByOneDig(ByVal dividend As String, ByVal divisorCh As 
     Dim errOfDvide As Variant
     
     '除数の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(divisorCh, intPrtOfDivisor, frcPrtOfDivisor, divisorIsMinus, radix)
+    retOfSeparatePnt = separateToIntAndFrc(divisor, radix, intPrtOfDivisor, frcPrtOfDivisor, divisorIsMinus)
     If (retOfSeparatePnt <> 0) Then 'n進値として不正
-        divideNPntByOneDig = retOfSeparatePnt
-        Exit Function
-        
-    ElseIf (frcPrtOfDivisor <> "0") Or (Len(intPrtOfDivisor) > 1) Then '小数部が存在する / 整数部が2桁以上
-        divideNPntByOneDig = CVErr(xlErrNum) '#NUM!を返す
+        divideNPntNPnt = retOfSeparatePnt
         Exit Function
         
     End If
     
-    divisor = convNCharToByte(intPrtOfDivisor)
-    
-    If (radix <= divisor) Then
-        divideNPntByOneDig = CVErr(xlErrNum) '#NUM!を返す
-        Exit Function
+    '整数の不要な0を取り除く
+    Do While (Left(intPrtOfDivisor, 1) = "0")
+        intPrtOfDivisor = Right(intPrtOfDivisor, Len(intPrtOfDivisor) - 1)
         
-    ElseIf (divisor = 0) Then
-        divideNPntByOneDig = CVErr(xlErrDiv0) '#DIV0!を返す
+    Loop
+    
+    If intPrtOfDivisor = "" Then '全部0だったら
+        intPrtOfDivisor = "0"
+        
+    End If
+    
+    '小数の不要な0を取り除く
+    Do While (Right(frcPrtOfDivisor, 1) = "0")
+        frcPrtOfDivisor = Left(frcPrtOfDivisor, Len(frcPrtOfDivisor) - 1)
+        
+    Loop
+    
+    '0割チェック
+    If (intPrtOfDivisor = "0") And (frcPrtOfDivisor = "") Then
+        divideNPntNPnt = CVErr(xlErrDiv0) '#DIV0!を返す
         Exit Function
         
     End If
     
     '被除数の文字列チェック&小数、整数分解
-    retOfSeparatePnt = separateToIntAndFrc(dividend, intPrtOfDividend, frcPrtOfDividend, dividendIsMinus, radix)
+    retOfSeparatePnt = separateToIntAndFrc(dividend, radix, intPrtOfDividend, frcPrtOfDividend, dividendIsMinus)
     If (retOfSeparatePnt <> 0) Then 'n進値として不正
-        divideNPntByOneDig = retOfSeparatePnt
+        divideNPntNPnt = retOfSeparatePnt
         Exit Function
         
     End If
     
-    '小数部が存在しない場合は、取り除く
-    If (frcPrtOfDividend = "0") Then
-        frcPrtOfDividend = ""
+    '整数の不要な0を取り除く
+    Do While (Left(intPrtOfDividend, 1) = "0")
+        intPrtOfDividend = Right(intPrtOfDividend, Len(intPrtOfDividend) - 1)
+        
+    Loop
+    
+    If intPrtOfDividend = "" Then '全部0だったら
+        intPrtOfDividend = "0"
+        
     End If
+    
+    '小数の不要な0を取り除く
+    Do While (Right(frcPrtOfDividend, 1) = "0")
+        frcPrtOfDividend = Left(frcPrtOfDividend, Len(frcPrtOfDividend) - 1)
+        
+    Loop
+    
     
     '除算
-    retOfDivide = divide(intPrtOfDividend & frcPrtOfDividend, intPrtOfDivisor, rm, limitOfRepTimes, radix, errOfDvide)
+    retOfDivide = divide(intPrtOfDividend & frcPrtOfDividend, intPrtOfDivisor & frcPrtOfDivisor, radix, limitOfRepTimes, rm, errOfDvide)
     
     If (retOfDivide = "") Then 'オーバーフローの場合
-        divideNPntByOneDig = errOfDvide
+        divideNPntNPnt = errOfDvide
         Exit Function
         
     End If
     
-    intPrtOfAns = Left(retOfDivide, Len(intPrtOfDividend))
-    frcPrtOfAns = Right(retOfDivide, Len(retOfDivide) - Len(intPrtOfDividend))
+    digitsOfIntPrtOfAns = Len(intPrtOfDividend) + Len(frcPrtOfDivisor)
+    lenOfRetOfDivide = Len(retOfDivide)
     
+    If (lenOfRetOfDivide < digitsOfIntPrtOfAns) Then
+        intPrtOfAns = retOfDivide & String(digitsOfIntPrtOfAns - lenOfRetOfDivide, "0") '整数部の生成
+        frcPrtOfAns = "0"
+        
+    Else
+        intPrtOfAns = Left(retOfDivide, digitsOfIntPrtOfAns) '小数部の生成
+        frcPrtOfAns = Right(retOfDivide, lenOfRetOfDivide - digitsOfIntPrtOfAns)
+        
+    End If
     
     '整数部の不要な0を取り除く
     Do While (Left(intPrtOfAns, 1) = "0")
         intPrtOfAns = Right(intPrtOfAns, Len(intPrtOfAns) - 1)
     Loop
+    
     If (intPrtOfAns = "") Then '全部0だったら
         intPrtOfAns = "0"
     End If
@@ -606,7 +667,7 @@ Public Function divideNPntByOneDig(ByVal dividend As String, ByVal divisorCh As 
     
     End If
     
-    divideNPntByOneDig = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    divideNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
     
 End Function
 
@@ -616,7 +677,7 @@ End Function
 '成功の場合は0を返却する
 '失敗の場合はCvErrを返却する
 '
-Private Function separateToIntAndFrc(ByVal pnt As String, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean, ByVal radix As Byte) As Variant
+Private Function separateToIntAndFrc(ByVal pnt As String, ByVal radix As Byte, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
     
     Dim idxOfDot As Long
     
@@ -647,7 +708,7 @@ Private Function separateToIntAndFrc(ByVal pnt As String, ByRef intPrt As String
     End If
     
     'n進値として正しいかチェック
-    ret = checkNumeralPntStr(pnt, idxOfDot, radix)
+    ret = checkNumeralPntStr(pnt, radix, idxOfDot)
     
     If (ret <> (Len(pnt) + 1)) Then 'value1はn進値として不正
         separateToIntAndFrc = CVErr(xlErrNum) '#NUM!を返す
@@ -694,7 +755,7 @@ End Function
 'radix
 '    基数(2~16のみ)
 '
-Private Function checkNumeralPntStr(ByVal decStr As String, ByRef idxOfDot As Long, ByRef radix As Byte) As Long
+Private Function checkNumeralPntStr(ByVal decStr As String, ByVal radix As Byte, ByRef idxOfDot As Long) As Long
     
     Dim foundIdxOfDot As Long '小数点文字が最初に見つかった文字位置
     Dim cnt As Long
@@ -870,7 +931,7 @@ End Function
 '
 'val1からval2を減算する
 '
-Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByRef minus As Boolean, ByVal radix As Byte) As String
+Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte, ByRef resultIsMinus As Boolean) As String
     
     '変数宣言
     Dim lenOfVal1 As Long
@@ -930,7 +991,7 @@ Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByRef minu
     
     If (val1IsLarger = 0) Then  '2数は同じ数値
         subtract = String(idxMxOfVal, "0")
-        minus = False
+        resultIsMinus = False
         Exit Function
         
     End If
@@ -979,7 +1040,7 @@ Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByRef minu
     Next idxOfVal
     
     subtract = Join(stringBuilder, vbNullString)
-    minus = wasMinus
+    resultIsMinus = wasMinus
     
     
 End Function
@@ -1007,7 +1068,7 @@ Private Function multiple(ByVal multiplicand As String, ByVal multiplier As Stri
         multiple = String(Len(multiplicand), "0")
         Exit Function
         
-    ElseIf (multiplierCh = "1") Then '1掛けの場合はそのまま返す
+    ElseIf (multiplier = "1") Then '1掛けの場合はそのまま返す
         multiple = multiplicand
         Exit Function
         
@@ -1109,7 +1170,7 @@ End Function
 '    一番左を1桁目として小数点を取り除いた小数文字列となる。
 '    ex:)
 '    【前提】10 / 8 = 1.2 余り 0.4
-'    【実行方法】x = divide("10", "8", rm, 1, 10, code)
+'    【実行方法】x = divide("10", "8", 10, 1, rm, code)
 '    【結果】 x:012
 '            rm:04
 '
@@ -1117,7 +1178,7 @@ End Function
 '    Indivisible Numberに対するdivide回数制限
 '    (-)値を設定した場合は、無限に割り続ける
 '
-Private Function divide(ByVal dividend As String, ByVal divisor As String, ByRef remainder As String, ByVal limitOfRepTimes As Long, ByVal radix As Byte, ByRef errCode As Variant) As String
+Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal limitOfRepTimes As Long, ByRef remainder As String, ByRef errCode As Variant) As String
 
     '変数宣言
     Dim quot As Long '商
@@ -1263,7 +1324,8 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
         
     End If
     
-    If (radix = 10) Then '10進→10進変換だったら
+    '10進→10進変換だったら
+    If (radix = 10) Then
         convIntPrtOfDecPntToIntPrtOfNPnt = decInt '変換せずに返す
         Exit Function
         
@@ -1271,15 +1333,6 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
     
     sizeOfStringBuilder = 0
     strLenOfRadix = Len(CStr(radix))
-    
-    If (radix > 9) Then 'A~Fに該当する数値の場合
-        
-        strOfRadix = Chr((radix - 10) + Asc("A"))
-        
-    Else '0~9に該当する数値の場合
-        strOfRadix = CStr(radix)
-        
-    End If
     
     '字列生成
     Do While True
@@ -1292,7 +1345,7 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
             End If
         End If
         
-        decInt = divide(decInt, strOfRadix, rm, 0, 10, errOfDvide)
+        decInt = divide(decInt, radix, 10, 0, rm, errOfDvide)
         'オーバーフローは発生し得ない
         
         '左側の不要な"0"を取り除く
@@ -1327,7 +1380,7 @@ End Function
 '    求める小数点以下の桁数
 '    0を指定した場合は空文字を返す
 '
-Private Function convFrcPrtOfDecPntToFrcPrtOfNPnt(ByVal frcPt As String, ByVal numOfDigits As Long, ByVal radix As Byte) As String
+Private Function convFrcPrtOfDecPntToFrcPrtOfNPnt(ByVal frcPt As String, ByVal radix As Byte, ByVal numOfDigits As Long) As String
     
     Dim stringBuilder() As String '変換結果格納用
     Dim repTimes As Long
@@ -1354,7 +1407,14 @@ Private Function convFrcPrtOfDecPntToFrcPrtOfNPnt(ByVal frcPt As String, ByVal n
         
     End If
     
-    '掛け算する
+    '10進→10進変換だったら
+    If (radix = 10) Then
+        convFrcPrtOfDecPntToFrcPrtOfNPnt = frcPt
+        Exit Function
+        
+    End If
+    
+    '字列生成ループ
     repTimes = 0
     sizeOfStringBuilder = 0
     Do
@@ -1394,42 +1454,6 @@ Private Function convFrcPrtOfDecPntToFrcPrtOfNPnt(ByVal frcPt As String, ByVal n
 End Function
 
 '
-'2進整数部分から10進整数部分に変換する
-'
-Private Function convIntPrtOfBinToIntPrtOfDecPrt(ByVal intPt As String) As String
-    
-    Dim nPowerOf2 As String
-    Dim decStr As String
-    
-    '
-    '有効2進文字列かどうかはチェックしない
-    '
-    
-    '引数チェック
-    If (intPt = "") Then '空文字指定の場合
-        convIntPrtOfBinToIntPrtOfDecPrt = "0" '"0"を返す
-        Exit Function
-        
-    End If
-    
-    nPowerOf2 = "1"
-    decStr = "0"
-    
-    For cnt = Len(intPt) To 1 Step -1
-        
-        If (Mid(intPt, cnt, 1) = "1") Then
-            decStr = add(nPowerOf2, decStr, 10, True)
-        End If
-        
-        nPowerOf2 = multiple(nPowerOf2, "2", 10)
-        
-    Next cnt
-    
-    convIntPrtOfBinToIntPrtOfDecPrt = decStr
-    
-End Function
-
-'
 'n進整数部分から10進整数部分に変換する
 '
 Private Function convIntPrtOfNPntToIntPrtOfDecPnt(ByVal intPt As String, ByVal radix As Byte) As String
@@ -1444,6 +1468,13 @@ Private Function convIntPrtOfNPntToIntPrtOfDecPnt(ByVal intPt As String, ByVal r
     '引数チェック
     If (intPt = "") Then '空文字指定の場合
         convIntPrtOfNPntToIntPrtOfDecPnt = "0" '"0"を返す
+        Exit Function
+        
+    End If
+    
+    '10進→10進変換だったら
+    If (radix = 10) Then
+        convIntPrtOfNPntToIntPrtOfDecPnt = intPt
         Exit Function
         
     End If
@@ -1470,49 +1501,6 @@ Private Function convIntPrtOfNPntToIntPrtOfDecPnt(ByVal intPt As String, ByVal r
 End Function
 
 '
-'2進小数部分から10進小数部分に変換する
-'
-Private Function convFrcPrtOfBinPntToFrcPrtOfDecPnt(ByVal frcPt As String) As String
-    
-    Dim lpMx As Long
-    Dim decStr As String
-    
-    Dim minusNpowerOf2 As String
-    
-    Dim rm As String
-    Dim errOfDvide As Variant
-    
-    '
-    '有効2進文字列かどうかはチェックしない
-    '
-    
-    '引数チェック
-    If (frcPt = "") Then '空文字指定の場合
-        convFrcPrtOfBinPntToFrcPrtOfDecPnt = "0" '"0"を返す
-        Exit Function
-        
-    End If
-    
-    lpMx = Len(frcPt)
-    decStr = "0"
-    minusNpowerOf2 = "5"
-    
-    '生成ループ
-    For cnt = 1 To lpMx
-        If (Mid(frcPt, cnt, 1) = "1") Then
-            decStr = add(minusNpowerOf2, decStr, 10, False)
-        End If
-        
-        minusNpowerOf2 = divide(minusNpowerOf2, "2", rm, 1, 10, errOfDvide)
-        'オーバーフローは発生し得ない
-        
-    Next cnt
-    
-    convFrcPrtOfBinPntToFrcPrtOfDecPnt = decStr
-    
-End Function
-
-'
 'n進小数部分から10進小数部分に変換する
 '
 'numOfSignificantDigits
@@ -1520,9 +1508,21 @@ End Function
 '
 'precisionOfConv
 '    変換精度
+'    ex:)
+'    【前提】0.1(3進数) = 0.33333333333333..(10進数)←3の繰り返し
+'    【実行方法】convFrcPrtOfNPntToFrcPrtOfDecPnt("1", 3, precOfConv, ansIT)
+'    【結果】
+'            precOfConv=2で実行した場合: 返却値:33
+'            precOfConv=3で実行した場合: 返却値:333
 '
-'ansIncTrunc
-'    変換誤差があった場合、誤差を含めた最大値
+'ansIncTrunc(※参照渡し)
+'    変換誤差を含めた最大の解
+'    ex:)
+'    【前提】0.01(3進数) = 0.1111111111111..(10進数)←1の繰り返し
+'    【実行方法】convFrcPrtOfNPntToFrcPrtOfDecPnt("01", 3, 2, ansIT)
+'    【結果】返却値:11
+'            ansIT :1134
+'       ※解は0.11以上、0.1134未満である事を表す
 '
 Private Function convFrcPrtOfNPntToFrcPrtOfDecPnt(ByVal frcPt As String, ByVal radix As Byte, ByVal precisionOfConv As Long, ByRef ansIncTrunc As String) As String
     
@@ -1555,7 +1555,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfDecPnt(ByVal frcPt As String, ByVal r
     decStr = "0"
     trunc = "0"
     
-    tmp = divide("1", strOfRadix, rm, precisionOfConv, 10, errOfDivide)
+    tmp = divide("1", strOfRadix, 10, precisionOfConv, rm, errOfDivide)
     'オーバーフローは発生し得ない
     minusXpowerOfRadix = Right(tmp, Len(tmp) - 1) '一番左の0を取り除く
     
@@ -1564,7 +1564,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfDecPnt(ByVal frcPt As String, ByVal r
         
     End If
     
-    minusXpowerOfRadixT = add(minusXpowerOfRadix, rm, 10, False)
+    minusXpowerOfRadixT = add(minusXpowerOfRadix, rm, 10, True)
     
     '生成ループ
     For cnt = 1 To lpMx
@@ -1580,13 +1580,13 @@ Private Function convFrcPrtOfNPntToFrcPrtOfDecPnt(ByVal frcPt As String, ByVal r
             
         End If
         
-        minusXpowerOfRadix = divide(minusXpowerOfRadix, strOfRadix, rm, precisionOfConv, 10, errOfDvide)
+        minusXpowerOfRadix = divide(minusXpowerOfRadix, strOfRadix, 10, precisionOfConv, rm, errOfDvide)
         'オーバーフローは発生し得ない
         
-        minusXpowerOfRadixT = divide(minusXpowerOfRadixT, strOfRadix, rm, precisionOfConv, 10, errOfDvide)
+        minusXpowerOfRadixT = divide(minusXpowerOfRadixT, strOfRadix, 10, precisionOfConv, rm, errOfDvide)
         'オーバーフローは発生し得ない
         
-        minusXpowerOfRadixT = add(minusXpowerOfRadixT, rm, 10, False)
+        minusXpowerOfRadixT = add(minusXpowerOfRadixT, rm, 10, True)
         
     Next cnt
     
@@ -1670,4 +1670,5 @@ Private Function convByteToNChar(ByVal byt As Byte) As String
     convByteToNChar = toRetStr
     
 End Function
+
 
