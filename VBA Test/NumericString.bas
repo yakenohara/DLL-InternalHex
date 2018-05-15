@@ -193,7 +193,7 @@ Public Function convDecPntToNPnt(ByVal pntStr As String, ByVal radix As Byte, Op
     End If
     
     '整数部をn進変換
-    intPtOfAfter = convIntPrtOfDecPntToIntPrtOfNPnt(intPtOfBefore, radix)
+    intPtOfAfter = convIntPrtOfNPntToIntPrtOfNPnt(intPtOfBefore, 10, radix)
     
     '小数部をn進変換
     If (frcPtOfBefore = "") Then '小数部は存在しない場合
@@ -301,7 +301,7 @@ Public Function convNPntToDecPnt(ByVal pntStr As String, ByVal radix As Byte, Op
     End If
     
     '整数部変換
-    intPtOfAfter = convIntPrtOfNPntToIntPrtOfDecPnt(intPtOfBefore, radix)
+    intPtOfAfter = convIntPrtOfNPntToIntPrtOfNPnt(intPtOfBefore, radix, 10)
     
     '小数部をn進変換
     If (frcPtOfBefore = "") Then '小数部は存在しない場合
@@ -326,6 +326,20 @@ End Function
 '1の補数を得る
 '
 Public Function get1sComplement() As Variant
+    
+    '基数チェック
+    
+    '文字列の整数&小数分解
+    
+    '文字列はn進値として不正な場合
+    
+    '小数が存在する場合
+    
+    'n進→2進変換
+    
+    '補数を得る
+    
+    '2進→n進変換
     
     'todo
     
@@ -903,7 +917,7 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
         tmpDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1))
         tmpDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1))
         
-        tmpStr = convIntPrtOfDecPntToIntPrtOfNPnt(tmpDigitOfVal1 + tmpDigitOfVal2 + carrier, radix)
+        tmpStr = convIntPrtOfNPntToIntPrtOfNPnt(tmpDigitOfVal1 + tmpDigitOfVal2 + carrier, 10, radix)
         
         If (Len(tmpStr) = 2) Then '桁が増えたか
             carrier = 1
@@ -1035,7 +1049,7 @@ Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByVal radi
             
         End If
         
-        stringBuilder(idxOfVal - 1) = convIntPrtOfDecPntToIntPrtOfNPnt(val1Digit - val2Digit, radix)
+        stringBuilder(idxOfVal - 1) = convIntPrtOfNPntToIntPrtOfNPnt(val1Digit - val2Digit, 10, radix)
         
     Next idxOfVal
     
@@ -1126,7 +1140,7 @@ Private Function multipleByOneDig(ByVal multiplicand As String, ByVal multiplier
     Do
         digitOfMultiplicand = convNCharToByte(Mid(multiplicand, digitIdxOfMultiplicand, 1))
         
-        tmpStr = convIntPrtOfDecPntToIntPrtOfNPnt(digitOfMultiplicand * multiplier + carrier, radix)
+        tmpStr = convIntPrtOfNPntToIntPrtOfNPnt(digitOfMultiplicand * multiplier + carrier, 10, radix)
         
         'carrier判定
         If (Len(tmpStr) = 2) Then '桁が増えた場合
@@ -1148,7 +1162,7 @@ Private Function multipleByOneDig(ByVal multiplicand As String, ByVal multiplier
     '桁上がりチェック
     If (carrier > 0) Then
         ReDim Preserve stringBuilder(idxOfStringBuilder) '領域拡張
-        stringBuilder(idxOfStringBuilder) = convIntPrtOfDecPntToIntPrtOfNPnt(carrier, radix)
+        stringBuilder(idxOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(carrier, 10, radix)
         
     End If
     
@@ -1214,7 +1228,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     End If
     
     'divisorの10進変換
-    tmp = convIntPrtOfNPntToIntPrtOfDecPnt(divisor, radix)
+    tmp = convIntPrtOfNPntToIntPrtOfNPnt(divisor, radix, 10)
     
     'divisorのLong型変換
     On Error GoTo OVERFLOW
@@ -1247,7 +1261,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
         rmnd = digitOfDividend Mod divisorDec '余り
         
         ReDim Preserve stringBuilder(digitIdxOfDividend - 1) '領域拡張
-        stringBuilder(digitIdxOfDividend - 1) = convIntPrtOfDecPntToIntPrtOfNPnt(quot, radix) '商を追記
+        stringBuilder(digitIdxOfDividend - 1) = convIntPrtOfNPntToIntPrtOfNPnt(quot, 10, radix) '商を追記
         
         digitIdxOfDividend = digitIdxOfDividend + 1
         
@@ -1273,7 +1287,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     Else '余りが存在する時
         
         ReDim Preserve stringBuilderRM(repTimes) '領域拡張
-        stringBuilderRM(repTimes) = convIntPrtOfDecPntToIntPrtOfNPnt(rmnd, radix)
+        stringBuilderRM(repTimes) = convIntPrtOfNPntToIntPrtOfNPnt(rmnd, 10, radix)
         remainder = Join(stringBuilderRM, vbNullString) '文字列連結
     
     End If
@@ -1289,13 +1303,19 @@ OVERFLOW: 'オーバーフローの場合
     
 End Function
 
+Sub tewxzt()
+    
+    Debug.Print convNPntToDecPnt("10", 2) 'todo 無限ループにはいってしまう
+    
+End Sub
+
 '
-'10進整数部をn進整数部に変換する
+'n進整数部をn進整数部に変換する
 '
-'radix:
+'ToRadix:
 '    2~16 のみ
 '
-Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal radix As Byte) As String
+Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal decInt As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
     
     Dim stringBuilder() As String '変換後文字列生成用
     Dim sizeOfStringBuilder As Long
@@ -1303,11 +1323,11 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
     Dim errOfDvide As Variant
     
     '
-    '有効10進数値文字列かどうかはチェックしない
+    '有効n進数値文字列かどうかはチェックしない
     '
     
     If (decInt = "") Then
-        convIntPrtOfDecPntToIntPrtOfNPnt = "0"
+        convIntPrtOfNPntToIntPrtOfNPnt = "0"
         Exit Function
         
     End If
@@ -1319,33 +1339,34 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
     Loop
     
     If (decInt = "") Then '全部"0"だったら
-        convIntPrtOfDecPntToIntPrtOfNPnt = "0"
+        convIntPrtOfNPntToIntPrtOfNPnt = "0"
         Exit Function
         
     End If
     
-    '10進→10進変換だったら
-    If (radix = 10) Then
-        convIntPrtOfDecPntToIntPrtOfNPnt = decInt '変換せずに返す
+    'n進→n進変換だったら
+    If (fromRadix = toRadix) Then
+        convIntPrtOfNPntToIntPrtOfNPnt = decInt '変換せずに返す
         Exit Function
         
     End If
     
     sizeOfStringBuilder = 0
-    strLenOfRadix = Len(CStr(radix))
+    strLenOfRadix = Len(CStr(toRadix))
+    chOfToRadix = getRadixStr(fromRadix, toRadix)
     
     '字列生成
     Do While True
         
         If (Len(decInt) <= strLenOfRadix) Then
             
-            If (CByte(decInt) < radix) Then '基数で割れる数がなくなった
+            If (convNCharToByte(decInt) < toRadix) Then '基数で割れる数がなくなった
                 Exit Do
                 
             End If
         End If
         
-        decInt = divide(decInt, radix, 10, 0, rm, errOfDvide)
+        decInt = divide(decInt, chOfToRadix, fromRadix, 0, rm, errOfDvide)
         'オーバーフローは発生し得ない
         
         '左側の不要な"0"を取り除く
@@ -1369,7 +1390,7 @@ Private Function convIntPrtOfDecPntToIntPrtOfNPnt(ByVal decInt As String, ByVal 
     ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
     stringBuilder(sizeOfStringBuilder) = convByteToNChar(decInt)
     
-    convIntPrtOfDecPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
+    convIntPrtOfNPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
     
 End Function
 
@@ -1450,53 +1471,6 @@ Private Function convFrcPrtOfDecPntToFrcPrtOfNPnt(ByVal frcPt As String, ByVal r
     Loop While IIf(numOfDigits < 0, True, (repTimes < numOfDigits)) '繰り返し回数以下
     
     convFrcPrtOfDecPntToFrcPrtOfNPnt = Join(stringBuilder, vbNullString) '文字列連結
-    
-End Function
-
-'
-'n進整数部分から10進整数部分に変換する
-'
-Private Function convIntPrtOfNPntToIntPrtOfDecPnt(ByVal intPt As String, ByVal radix As Byte) As String
-    
-    Dim xPowerOfRadix As String
-    Dim decStr As String
-    
-    '
-    '有効n進文字列かどうかはチェックしない
-    '
-    
-    '引数チェック
-    If (intPt = "") Then '空文字指定の場合
-        convIntPrtOfNPntToIntPrtOfDecPnt = "0" '"0"を返す
-        Exit Function
-        
-    End If
-    
-    '10進→10進変換だったら
-    If (radix = 10) Then
-        convIntPrtOfNPntToIntPrtOfDecPnt = intPt
-        Exit Function
-        
-    End If
-    
-    strOfRadix = CStr(radix)
-    xPowerOfRadix = "1"
-    decStr = "0"
-    
-    For cnt = Len(intPt) To 1 Step -1
-        ch = Mid(intPt, cnt, 1)
-        
-        If (ch <> "0") Then
-            tmp = multiple(xPowerOfRadix, CStr(convNCharToByte(ch)), 10)
-            decStr = add(decStr, tmp, 10, True)
-            
-        End If
-        
-        xPowerOfRadix = multiple(xPowerOfRadix, strOfRadix, 10)
-        
-    Next cnt
-    
-    convIntPrtOfNPntToIntPrtOfDecPnt = decStr
     
 End Function
 
@@ -1671,4 +1645,40 @@ Private Function convByteToNChar(ByVal byt As Byte) As String
     
 End Function
 
+Sub testa()
+    
+    Debug.Print getRadixStr(2, 2)
+    
+End Sub
 
+'
+'基数変換で必要な文字列を得る
+'
+Private Function getRadixStr(ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
+    
+    Dim arr As Variant
+    
+    arr = Array( _
+        Array("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""), _
+        Array("", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""), _
+        Array("", "", "10", "11", "100", "101", "110", "111", "1000", "1001", "1010", "1011", "1100", "1101", "1110", "1111", "10000"), _
+        Array("", "", "2", "10", "11", "12", "20", "21", "22", "100", "101", "102", "110", "111", "112", "120", "121"), _
+        Array("", "", "2", "3", "10", "11", "12", "13", "20", "21", "22", "23", "30", "31", "32", "33", "100"), _
+        Array("", "", "2", "3", "4", "10", "11", "12", "13", "14", "20", "21", "22", "23", "24", "30", "31"), _
+        Array("", "", "2", "3", "4", "5", "10", "11", "12", "13", "14", "15", "20", "21", "22", "23", "24"), _
+        Array("", "", "2", "3", "4", "5", "6", "10", "11", "12", "13", "14", "15", "16", "20", "21", "22"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "10", "11", "12", "13", "14", "15", "16", "17", "20"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "10", "11", "12", "13", "14", "15", "16", "17"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "10", "11", "12", "13", "14", "15"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "10", "11", "12", "13", "14"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "10", "11", "12", "13"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "10", "11", "12"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "10", "11"), _
+        Array("", "", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "10") _
+    )
+    
+    getRadixStr = arr(fromRadix)(toRadix)
+    
+
+End Function
