@@ -81,7 +81,7 @@ End Function
 '!CAUTION!
 '    val1, val2 が有効な2進値であるかはチェックしない
 '
-Private Function addBinInt(ByVal val1 As String, ByVal val2 As String, ByRef errCode As Variant) As String
+Private Function addBinInt(ByVal val1 As String, ByVal val2 As String, ByRef endStatus As Variant) As String
 
     Dim lenOfVal1 As Long
     Dim lenOfVal2 As Long
@@ -141,7 +141,7 @@ End Function
 '!CAUTION!
 '    multiplicand, multiplier が有効な2進値であるかはチェックしない
 '
-Private Function multipleBinInt(ByVal multiplicand As String, ByVal multiplier As String, ByRef errCode As Variant) As String
+Private Function multipleBinInt(ByVal multiplicand As String, ByVal multiplier As String, ByRef endStatus As Variant) As String
     
     Dim stsOfSub As Variant
     Dim tmpAns As String
@@ -168,6 +168,35 @@ Private Function multipleBinInt(ByVal multiplicand As String, ByVal multiplier A
     Loop
     
     multipleBinInt = tmpAns
+    
+End Function
+
+
+'
+'整数同士を乗算する
+'
+'!CAUTION!
+'    multiplicand, multiplier が有効なn進値であるかはチェックしない
+'
+Private Function multiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte, ByRef endStatus As Variant) As String
+    
+    Dim binMultiplicand As String
+    Dim binMultiplier As String
+    Dim binAns As String
+    Dim ans As String
+    Dim stsOfSub As Variant
+    
+    '2進数変換
+    binMultiplicand = convIntPrtOfNPntToIntPrtOfNPnt(multiplicand, radix, 2, statusOfSub)
+    binMultiplier = convIntPrtOfNPntToIntPrtOfNPnt(multiplier, radix, 2, statusOfSub)
+    
+    '2進数で乗算
+    binAns = multipleBinInt(binMultiplicand, binMultiplier, statusOfSub)
+    
+    '乗算結果を指定n進値に戻す
+    ans = convIntPrtOfNPntToIntPrtOfNPnt(binAns, 2, radix, statusOfSub)
+    
+    multiple = ans
     
 End Function
 
@@ -589,4 +618,6 @@ Private Function invertStringArray(ByRef srcArr() As String, ByRef endStatus As 
     invertStringArray = retArr
     
 End Function
+
+
 
