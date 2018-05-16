@@ -1,11 +1,41 @@
 Attribute VB_Name = "convNPntNPnt"
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
+
+Public Function TESTaddBinInt(ByVal val1 As String, ByVal val2 As String) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTaddBinInt = addBinInt(val1, val2, stsOfSub)
+    
+End Function
+
+Public Function TESTaddBinIntByRef1(ByVal val1 As String, ByVal val2 As String) As Variant
+    
+    Dim stsOfSub As Variant
+    x = addBinInt(val1, val2, stsOfSub)
+    TESTaddBinIntByRef1 = stsOfSub
+    
+End Function
+
+Public Function TESTmultipleBinInt(ByVal multiplicand As String, ByVal multiplier As String) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTmultipleBinInt = multipleBinInt(multiplicand, multiplier, stsOfSub)
+    
+End Function
+
+Public Function TESTmultipleBinIntByRef1(ByVal multiplicand As String, ByVal multiplier As String) As Variant
+    
+    Dim stsOfSub As Variant
+    x = multipleBinInt(multiplicand, multiplier, stsOfSub)
+    TESTmultipleBinIntByRef1 = stsOfSub
+    
+End Function
+
 Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     TESTdivide = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
     
 End Function
@@ -14,9 +44,7 @@ Public Function TESTdivideByRef1(ByVal dividend As String, ByVal divisor As Stri
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
-    
     TESTdivideByRef1 = remainder
     
 End Function
@@ -25,9 +53,7 @@ Public Function TESTdivideByRef2(ByVal dividend As String, ByVal divisor As Stri
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
-    
     TESTdivideByRef2 = stsOfSub
     
 End Function
@@ -48,6 +74,102 @@ Public Function TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1(ByVal intStr As String,
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
+
+'
+'2進数の整数同士を和算する
+'
+'!CAUTION!
+'    val1, val2 が有効な2進値であるかはチェックしない
+'
+Private Function addBinInt(ByVal val1 As String, ByVal val2 As String, ByRef errCode As Variant) As String
+
+    Dim lenOfVal1 As Long
+    Dim lenOfVal2 As Long
+    Dim idxOfval As Long
+    Dim stringBuilder() As String
+    Dim sumH As Boolean
+    Dim carH As Boolean
+    Dim sumF As Boolean
+    Dim carF As Boolean
+    
+    '数値列長チェック
+    lenOfVal1 = Len(val1)
+    lenOfVal2 = Len(val2)
+    
+    '和算ループ前初期化
+    If (lenOfVal1 < lenOfVal2) Then 'val2の数値列長の方が長い
+        val1 = String(lenOfVal2 - lenOfVal1, "0") & val1 '桁数あわせ
+        idxOfval = lenOfVal2 'スタートインデックス
+        
+    Else
+        val2 = String(lenOfVal1 - lenOfVal2, "0") & val2 '桁数あわせ
+        idxOfval = lenOfVal1
+        
+    End If
+    
+    ReDim stringBuilder(idxOfval) '処理文字列長 + 1 分の配列定義
+    carF = False
+    
+    '和算ループ
+    Do While (idxOfval > 0)
+        
+        digitOfVal1 = (Mid(val1, idxOfval, 1) = "1")
+        digitOfVal2 = (Mid(val2, idxOfval, 1) = "1")
+        
+        sumH = (digitOfVal1) Xor (digitOfVal2)
+        carH = (digitOfVal1) And (digitOfVal2)
+        
+        sumF = (sumH) Xor (carF)
+        carF = ((sumH) And (carF)) Or (carH)
+        
+        stringBuilder(idxOfval) = IIf(sumF, "1", "0")
+        
+        idxOfval = idxOfval - 1 'decrement
+        
+    Loop
+    
+    stringBuilder(idxOfval) = IIf(carF, "1", "")
+    
+    addBinInt = Join(stringBuilder, vbNullString)
+    
+    
+End Function
+
+'
+'2進数の整数同士を乗算する
+'
+'!CAUTION!
+'    multiplicand, multiplier が有効な2進値であるかはチェックしない
+'
+Private Function multipleBinInt(ByVal multiplicand As String, ByVal multiplier As String, ByRef errCode As Variant) As String
+    
+    Dim stsOfSub As Variant
+    Dim tmpAns As String
+    Dim numOfShift As Long
+    Dim idxOfMultiplier As Long
+    
+    tmpAns = "0"
+    numOfShift = 0
+    idxOfMultiplier = Len(multiplier)
+    
+    '乗算ループ
+    Do While (idxOfMultiplier > 0)
+        
+        If (Mid(multiplier, idxOfMultiplier, 1) <> "0") Then
+            
+            '左に(処理桁数 - 1)シフトした数値で和算する
+            tmpAns = addBinInt(tmpAns, (multiplicand & String(numOfShift, "0")), stsOfSub)
+            
+        End If
+        
+        idxOfMultiplier = idxOfMultiplier - 1 'decrement
+        numOfShift = numOfShift + 1 'increment
+        
+    Loop
+    
+    multipleBinInt = tmpAns
+    
+End Function
 
 '
 '除算をする
@@ -81,21 +203,12 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     '変数宣言
     Dim quot As Long '商
     Dim rmnd As Long '余り
-    
     Dim repTimes As Long 'IndivisibleNumberに対するdivide回数
-    
     Dim digitOfDividend As Long '一時被除数
-    
     Dim stringBuilder() As String '商格納用
     Dim digitIdxOfDividend As Long 'Division結果文字列長
-    
     Dim divisorDec As Long
-    
     Dim stsOfSub As Variant
-    
-    '
-    'dividend, divisor が有効なn進値であるかはチェックしない
-    '
     
     'divisorの不要な0を取り除く
     divisor = removeLeft0(divisor, stsOfSub)
