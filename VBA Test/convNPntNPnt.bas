@@ -1,4 +1,37 @@
 Attribute VB_Name = "convNPntNPnt"
+'<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
+'
+Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
+    
+    Dim remainder As String
+    Dim stsOfSub As Variant
+    
+    TESTdivide = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
+    
+End Function
+
+Public Function TESTdivideByRef1(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
+    
+    Dim remainder As String
+    Dim stsOfSub As Variant
+    
+    x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
+    
+    TESTdivideByRef1 = remainder
+    
+End Function
+
+Public Function TESTdivideByRef2(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
+    
+    Dim remainder As String
+    Dim stsOfSub As Variant
+    
+    x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
+    
+    TESTdivideByRef2 = stsOfSub
+    
+End Function
+
 Public Function TESTconvIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
     
     Dim stsOfSub As Variant
@@ -6,20 +39,15 @@ Public Function TESTconvIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal
     
 End Function
 
-Public Function TESTByrefconvIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
+Public Function TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
     
     Dim stsOfSub As Variant
     ans = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix, stsOfSub)
-    TESTByrefconvIntPrtOfNPntToIntPrtOfNPnt = stsOfSub
+    TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1 = stsOfSub
 
 End Function
-
-Sub test1()
-    
-    Dim stsOfSub As Variant
-    Debug.Print convIntPrtOfNPntToIntPrtOfNPnt("10001", 2, 10, stsOfSub)
-    
-End Sub
+'
+'--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
 
 '
 '除算をする
@@ -32,7 +60,7 @@ End Sub
 'numOfFrcDigits:
 '    求める小数点以下の桁数
 '    指定桁数で除算を打ち切る
-'    (-)値を設定した場合は、無限に割り続ける
+'    (-)値を設定した場合は、小数点以下は求めない
 '
 'remainder
 '    剰余
@@ -149,9 +177,6 @@ End Function
 '
 'n進整数部をn進整数部に変換する
 '
-'ToRadix:
-'    2~16 のみ
-'
 '!CAUTION!
 '    intStrが有効な(fromRadix)進値であるかはチェックしない
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
@@ -197,7 +222,7 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
             
             If (retOfTryConvRadix <> "") Then
                 
-                If (CInt(retOfTryConvRadix) < toRadix) Then '基数で割れる数がなくなった
+                If (CByte(retOfTryConvRadix) < toRadix) Then '基数で割れる数がなくなった ※必ず retOfTryConvRadix > 0 とはなる ※
                     Exit Do
                     
                 End If
