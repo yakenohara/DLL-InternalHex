@@ -16,6 +16,21 @@ Public Function TESTaddByRef1(ByVal val1 As String, ByVal val2 As String, ByVal 
     
 End Function
 
+Public Function TESTmultiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTmultiple = multiple(multiplicand, multiplier, radix, stsOfSub)
+    
+End Function
+
+Public Function TESTmultipleByRef1(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    x = multiple(multiplicand, multiplier, radix, stsOfSub)
+    TESTmultipleByRef1 = stsOfSub
+    
+End Function
+
 Public Function TESTmultipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As Variant
     
     Dim stsOfSub As Variant
@@ -141,6 +156,46 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
     stringBuilder(idxOfVal) = IIf(decCarrier > 0, "1", "")
     
     add = Join(stringBuilder, vbNullString)
+    
+End Function
+
+'
+'乗算をする
+'
+'!CAUTION!
+'    multiplicand, multiplier が有効なn進値であるかはチェックしない
+'    radixは2~16の範囲内である事はチェックしない
+'
+Private Function multiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte, ByRef endStatus) As String
+
+    Dim ansOfMultipleByOneDigit As String
+    Dim numOfShift As Long
+    Dim tmpAns As String
+    Dim stsOfSub As Variant
+    Dim idxOfMultiplier As Long
+    
+    'multiplierの不要な0を取り除く
+    multiplier = removeLeft0(multiplier, stsOfSub)
+    
+    numOfShift = 0
+    tmpAns = String(Len(multiplicand), "0")
+    
+    '乗算ループ
+    For idxOfMultiplier = Len(multiplier) To 1 Step -1
+        
+        digitOfMultiplier = Mid(multiplier, idxOfMultiplier, 1)
+        
+        If (digitOfMultiplier <> "0") Then '1以上の数値の時だけ、解に足し合わせる
+            ansOfMultipleByOneDigit = multipleByOneDigit(multiplicand, digitOfMultiplier, radix, stsOfSub)
+            tmpAns = add(tmpAns, ansOfMultipleByOneDigit & String(numOfShift, "0"), radix)
+            
+        End If
+        
+        numOfShift = numOfShift + 1
+        
+    Next idxOfMultiplier
+    
+    multiple = tmpAns
     
 End Function
 
