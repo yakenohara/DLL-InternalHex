@@ -5,7 +5,6 @@ Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, By
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     TESTdivide = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
     
 End Function
@@ -14,9 +13,7 @@ Public Function TESTdivideByRef1(ByVal dividend As String, ByVal divisor As Stri
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
-    
     TESTdivideByRef1 = remainder
     
 End Function
@@ -25,9 +22,7 @@ Public Function TESTdivideByRef2(ByVal dividend As String, ByVal divisor As Stri
     
     Dim remainder As String
     Dim stsOfSub As Variant
-    
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
-    
     TESTdivideByRef2 = stsOfSub
     
 End Function
@@ -81,21 +76,12 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     '変数宣言
     Dim quot As Long '商
     Dim rmnd As Long '余り
-    
     Dim repTimes As Long 'IndivisibleNumberに対するdivide回数
-    
     Dim digitOfDividend As Long '一時被除数
-    
     Dim stringBuilder() As String '商格納用
     Dim digitIdxOfDividend As Long 'Division結果文字列長
-    
     Dim divisorDec As Long
-    
     Dim stsOfSub As Variant
-    
-    '
-    'dividend, divisor が有効なn進値であるかはチェックしない
-    '
     
     'divisorの不要な0を取り除く
     divisor = removeLeft0(divisor, stsOfSub)
