@@ -3,16 +3,7 @@ Attribute VB_Name = "convNPntNPnt"
 '
 Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
     
-    Dim stsOfSub As Variant
     TESTadd = add(val1, val2, radix)
-    
-End Function
-
-Public Function TESTaddByRef1(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    x = add(val1, val2, radix)
-    TESTaddByRef1 = stsOfSub
     
 End Function
 
@@ -85,6 +76,21 @@ Public Function TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1(ByVal intStr As String,
     ans = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix, stsOfSub)
     TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1 = stsOfSub
 
+End Function
+
+Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTconvFrcPrtOfNPntToFrcPrtOfNPnt = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits, stsOfSub)
+    
+End Function
+
+Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPntByRef1(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
+    
+    Dim stsOfSub As Variant
+    x = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits, stsOfSub)
+    TESTconvFrcPrtOfNPntToFrcPrtOfNPntByRef1 = stsOfSub
+    
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
@@ -463,6 +469,84 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     
     convIntPrtOfNPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder, stsOfSub), vbNullString) '文字列連結
     
+End Function
+
+'
+'n進小数部をn進小数部に変換する
+'
+'numOfDigits:
+'    求める桁数
+'    0以下を指定した場合は、空文字を返却する
+'
+'!CAUTION!
+'    frcStrが有効な(fromRadix)進値であるかはチェックしない
+'    fromRadix,toRadixは2~16の範囲内である事はチェックしない
+'
+Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long, ByRef endStatus As Variant) As String
+    
+    Dim stsOfSub As Variant
+    Dim stringBuilder() As String '変換後文字列生成用
+    Dim sizeOfStringBuilder As Long
+    Dim retOfMultiple As String
+    
+    frcStr = removeRight0(frcStr, stsOfSub)
+    
+    '変換する基数が同じ場合
+    If (fromRadix = toRadix) Then
+        convFrcPrtOfNPntToFrcPrtOfNPnt = frcStr '"0"を取り除いただけの値を返す
+        Exit Function
+        
+    End If
+    
+    '"0"を変換する場合
+    If (frcStr = "0") Then
+        convFrcPrtOfNPntToFrcPrtOfNPnt = "0" '"0"を返す
+        Exit Function
+        
+    End If
+    
+    '生成ループ前初期化
+    strOfToRadix = convRadix(fromRadix, toRadix, stsOfSub)
+    sizeOfStringBuilder = 0
+    lenOfFrcStrB = Len(frcStr)
+    
+    '生成ループ - toRadixによる乗算によって解を求める -
+    Do While (sizeOfStringBuilder < numOfDigits)
+        
+        '小数の積が0になったら終了
+        If (frcStr = "0") Then
+            Exit Do
+            
+        End If
+        
+        frcStr = multiple(frcStr, strOfToRadix, fromRadix, statusOfSub)
+        
+        ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
+        
+        '増えた桁を拾う
+        lenOfFrcStrA = Len(frcStr)
+        
+        If (lenOfFrcStrA > lenOfFrcStrB) Then
+            tmp = Left(frcStr, lenOfFrcStrA - lenOfFrcStrB)
+            frcStr = Right(frcStr, lenOfFrcStrB)
+            increasedDigits = convIntPrtOfNPntToIntPrtOfNPnt(tmp, fromRadix, toRadix, stsOfSub)
+            
+        Else
+            increasedDigits = "0"
+        
+        End If
+        
+        stringBuilder(sizeOfStringBuilder) = increasedDigits '解を追記
+        
+        frcStr = removeRight0(frcStr, stsOfSub) ' 右側の不要な0を取り除く
+        
+        lenOfFrcStrB = Len(frcStr)
+        sizeOfStringBuilder = sizeOfStringBuilder + 1
+        
+    Loop
+    
+    convFrcPrtOfNPntToFrcPrtOfNPnt = Join(stringBuilder, vbNullString)
+
 End Function
 
 '
