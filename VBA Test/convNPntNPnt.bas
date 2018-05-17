@@ -1,6 +1,21 @@
 Attribute VB_Name = "convNPntNPnt"
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
+Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTadd = add(val1, val2, radix)
+    
+End Function
+
+Public Function TESTaddByRef1(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    x = add(val1, val2, radix)
+    TESTaddByRef1 = stsOfSub
+    
+End Function
+
 Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
     
     Dim remainder As String
@@ -43,6 +58,76 @@ Public Function TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1(ByVal intStr As String,
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
+
+'
+'2数を和算する
+'
+'!CAUTION!
+'    val1, val2 が有効なn進値であるかはチェックしない
+'    radixは2~16の範囲内である事はチェックしない
+'
+Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As String
+    
+    '変数宣言
+    Dim lenOfVal1 As Integer
+    Dim lenOfVal2 As Integer
+    Dim idxOfVal As Long
+    Dim stringBuilder() As String
+    Dim decDigitOfVal1 As Integer
+    Dim decDigitOfVal2 As Integer
+    Dim decCarrier As Integer
+    Dim decDigitOfAns  As Integer
+    Dim stsOfSub As Variant
+    
+    '数値列長取得
+    lenOfVal1 = Len(val1)
+    lenOfVal2 = Len(val2)
+    
+    '0埋め確認
+    If (lenOfVal1 > lenOfVal2) Then
+        val2 = String(lenOfVal1 - lenOfVal2, "0") & val2
+        idxOfVal = lenOfVal1
+        
+    Else
+        val1 = String(lenOfVal2 - lenOfVal1, "0") & val1
+        idxOfVal = lenOfVal2
+        
+    End If
+    
+    'ループ前初期化
+    ReDim stringBuilder(idxOfVal) '領域確保
+    decCarrier = 0
+    
+    '解の生成ループ
+    Do While (idxOfVal > 0)
+        
+        '対象桁の和算
+        decDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1), stsOfSub)
+        decDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1), stsOfSub)
+        decDigitOfAns = decDigitOfVal1 + decDigitOfVal2 + decCarrier
+        
+        '繰り上がり&解格納
+        If (decDigitOfAns >= radix) Then '繰り上がりあり
+            decCarrier = 1
+            decDigitOfAns = decDigitOfAns - radix
+            
+        Else '繰り上がりあり
+            decCarrier = 0
+            
+        End If
+        
+        stringBuilder(idxOfVal) = convByteToNChar(decDigitOfAns, stsOfSub) '解を格納
+        
+        idxOfVal = idxOfVal - 1 'decrement
+        
+    Loop
+    
+    '最上位桁格納
+    stringBuilder(idxOfVal) = IIf(decCarrier > 0, "1", "")
+    
+    add = Join(stringBuilder, vbNullString)
+    
+End Function
 
 '
 '除算をする
