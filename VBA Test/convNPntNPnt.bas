@@ -16,6 +16,21 @@ Public Function TESTaddByRef1(ByVal val1 As String, ByVal val2 As String, ByVal 
     
 End Function
 
+Public Function TESTmultipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    TESTmultipleByOneDigit = multipleByOneDigit(multiplicand, multiplierCh, radix, stsOfSub)
+
+End Function
+
+Public Function TESTmultipleByOneDigitByRef1(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As Variant
+    
+    Dim stsOfSub As Variant
+    x = multipleByOneDigit(multiplicand, multiplierCh, radix, stsOfSub)
+    TESTmultipleByOneDigitByRef1 = stsOfSub
+
+End Function
+
 Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
     
     Dim remainder As String
@@ -111,7 +126,7 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
             decCarrier = 1
             decDigitOfAns = decDigitOfAns - radix
             
-        Else 'ŒJ‚èã‚ª‚è‚ ‚è
+        Else 'ŒJ‚èã‚ª‚è‚È‚µ
             decCarrier = 0
             
         End If
@@ -126,6 +141,76 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
     stringBuilder(idxOfVal) = IIf(decCarrier > 0, "1", "")
     
     add = Join(stringBuilder, vbNullString)
+    
+End Function
+
+'
+'1Œ…”’l‚É‚æ‚éæŽZ‚ð‚·‚é
+'
+'!CAUTION!
+'    multiplicand, multiplierCh ‚ª—LŒø‚Èni’l‚Å‚ ‚é‚©‚Íƒ`ƒFƒbƒN‚µ‚È‚¢
+'    radix‚Í2~16‚Ì”ÍˆÍ“à‚Å‚ ‚éŽ–‚Íƒ`ƒFƒbƒN‚µ‚È‚¢
+'
+Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte, ByRef endStatus) As String
+
+    Dim decMultiplier As Byte
+    Dim stsOfSub As Variant
+    
+    Dim decDigitOfMultiplicand As Byte
+    Dim decCarrier As Byte
+    Dim decDigitOfAns  As Byte
+    
+    Dim digitIdxOfMultiplicand As Long
+    Dim stringBuilder() As String 'Š„‚èŽZŒ‹‰ÊŠi”[—p
+    
+    'æ”‚Ì10i•ÏŠ·
+    decMultiplier = convNCharToByte(multiplierCh, stsOfSub)
+    
+    '0Š|‚¯&1Š|‚¯ƒ`ƒFƒbƒN
+    If (decMultiplier = 0) Then
+        multipleByOneDigit = String(Len(multiplicand), "0") '0Š|‚¯‚Ìê‡‚Í0‚ð•Ô‚·
+        Exit Function
+    
+    ElseIf (multiplierCh = "1") Then '1Š|‚¯‚Ìê‡‚Í‚»‚Ì‚Ü‚Ü•Ô‚·
+        multipleByOneDigit = multiplicand
+        Exit Function
+        
+    End If
+    
+    'ƒ‹[ƒv‘O‰Šú‰»
+    digitIdxOfMultiplicand = Len(multiplicand)
+    ReDim stringBuilder(digitIdxOfMultiplicand) '—ÌˆæŠm•Û
+    decCarrier = 0
+    
+    Do While (digitIdxOfMultiplicand > 0) '”íæ”‚ªŽc‚Á‚Ä‚¢‚éŠÔ
+        
+        '‘ÎÛŒ…‚ÌæŽZ
+        decDigitOfMultiplicand = convNCharToByte(Mid(multiplicand, digitIdxOfMultiplicand, 1), stsOfSub)
+        decDigitOfAns = decDigitOfMultiplicand * decMultiplier + decCarrier
+        
+        digitOfAns = convIntPrtOfNPntToIntPrtOfNPnt(decDigitOfAns, 10, radix, stsOfSub) '10i¨ni•ÏŠ·
+        
+        'ŒJ‚èã‚ª‚è&‰ðŠi”[
+        If (Len(digitOfAns) = 2) Then 'ŒJ‚èã‚ª‚è‚ ‚è
+            decCarrier = convNCharToByte(Left(digitOfAns, 1), stsOfSub)
+            digitOfAns = Right(digitOfAns, 1)
+            
+        Else 'ŒJ‚èã‚ª‚è‚È‚µ
+            decCarrier = 0
+            
+        End If
+        
+        '‰ðŠi”[
+        stringBuilder(digitIdxOfMultiplicand) = digitOfAns
+        
+        digitIdxOfMultiplicand = digitIdxOfMultiplicand - 1 'decrement
+        
+    Loop
+    
+    'ÅãˆÊŒ…Ši”[
+    stringBuilder(digitIdxOfMultiplicand) = IIf(decCarrier > 0, convByteToNChar(decCarrier, stsOfSub), "")
+    
+    multipleByOneDigit = Join(stringBuilder, vbNullString) '•¶Žš—ñ˜AŒ‹
     
 End Function
 
