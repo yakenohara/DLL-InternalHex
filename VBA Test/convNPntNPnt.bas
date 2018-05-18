@@ -2,95 +2,43 @@ Attribute VB_Name = "convNPntNPnt"
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
 Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
-    
     TESTadd = add(val1, val2, radix)
-    
 End Function
 
 Public Function TESTmultiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    TESTmultiple = multiple(multiplicand, multiplier, radix, stsOfSub)
-    
-End Function
-
-Public Function TESTmultipleByRef1(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    x = multiple(multiplicand, multiplier, radix, stsOfSub)
-    TESTmultipleByRef1 = stsOfSub
-    
+    TESTmultiple = multiple(multiplicand, multiplier, radix)
 End Function
 
 Public Function TESTmultipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    TESTmultipleByOneDigit = multipleByOneDigit(multiplicand, multiplierCh, radix, stsOfSub)
-
-End Function
-
-Public Function TESTmultipleByOneDigitByRef1(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    x = multipleByOneDigit(multiplicand, multiplierCh, radix, stsOfSub)
-    TESTmultipleByOneDigitByRef1 = stsOfSub
-
+    TESTmultipleByOneDigit = multipleByOneDigit(multiplicand, multiplierCh, radix)
 End Function
 
 Public Function TESTdivide(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
-    
     Dim remainder As String
     Dim stsOfSub As Variant
     TESTdivide = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
-    
 End Function
 
 Public Function TESTdivideByRef1(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
-    
     Dim remainder As String
     Dim stsOfSub As Variant
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
     TESTdivideByRef1 = remainder
-    
 End Function
 
 Public Function TESTdivideByRef2(ByVal dividend As String, ByVal divisor As String, ByVal radix As Byte, ByVal numOfFrcDigits As Long) As Variant
-    
     Dim remainder As String
     Dim stsOfSub As Variant
     x = divide(dividend, divisor, radix, numOfFrcDigits, remainder, stsOfSub)
     TESTdivideByRef2 = stsOfSub
-    
 End Function
 
 Public Function TESTconvIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    TESTconvIntPrtOfNPntToIntPrtOfNPnt = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix, stsOfSub)
-    
-End Function
-
-Public Function TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
-    
-    Dim stsOfSub As Variant
-    ans = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix, stsOfSub)
-    TESTconvIntPrtOfNPntToIntPrtOfNPntByRef1 = stsOfSub
-
+    TESTconvIntPrtOfNPntToIntPrtOfNPnt = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix)
 End Function
 
 Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
-    
-    Dim stsOfSub As Variant
-    TESTconvFrcPrtOfNPntToFrcPrtOfNPnt = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits, stsOfSub)
-    
-End Function
-
-Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPntByRef1(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
-    
-    Dim stsOfSub As Variant
-    x = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits, stsOfSub)
-    TESTconvFrcPrtOfNPntToFrcPrtOfNPntByRef1 = stsOfSub
-    
+    TESTconvFrcPrtOfNPntToFrcPrtOfNPnt = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits)
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
@@ -138,8 +86,8 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
     Do While (idxOfVal > 0)
         
         '対象桁の和算
-        decDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1), stsOfSub)
-        decDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1), stsOfSub)
+        decDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1))
+        decDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1))
         decDigitOfAns = decDigitOfVal1 + decDigitOfVal2 + decCarrier
         
         '繰り上がり&解格納
@@ -152,7 +100,7 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
             
         End If
         
-        stringBuilder(idxOfVal) = convByteToNChar(decDigitOfAns, stsOfSub) '解を格納
+        stringBuilder(idxOfVal) = convByteToNChar(decDigitOfAns) '解を格納
         
         idxOfVal = idxOfVal - 1 'decrement
         
@@ -172,7 +120,7 @@ End Function
 '    multiplicand, multiplier が有効なn進値であるかはチェックしない
 '    radixは2~16の範囲内である事はチェックしない
 '
-Private Function multiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte, ByRef endStatus) As String
+Private Function multiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As String
 
     Dim ansOfMultipleByOneDigit As String
     Dim numOfShift As Long
@@ -181,7 +129,7 @@ Private Function multiple(ByVal multiplicand As String, ByVal multiplier As Stri
     Dim idxOfMultiplier As Long
     
     'multiplierの不要な0を取り除く
-    multiplier = removeLeft0(multiplier, stsOfSub)
+    multiplier = removeLeft0(multiplier)
     
     numOfShift = 0
     tmpAns = String(Len(multiplicand), "0")
@@ -192,7 +140,7 @@ Private Function multiple(ByVal multiplicand As String, ByVal multiplier As Stri
         digitOfMultiplier = Mid(multiplier, idxOfMultiplier, 1)
         
         If (digitOfMultiplier <> "0") Then '1以上の数値の時だけ、解に足し合わせる
-            ansOfMultipleByOneDigit = multipleByOneDigit(multiplicand, digitOfMultiplier, radix, stsOfSub)
+            ansOfMultipleByOneDigit = multipleByOneDigit(multiplicand, digitOfMultiplier, radix)
             tmpAns = add(tmpAns, ansOfMultipleByOneDigit & String(numOfShift, "0"), radix)
             
         End If
@@ -212,7 +160,7 @@ End Function
 '    multiplicand, multiplierCh が有効なn進値であるかはチェックしない
 '    radixは2~16の範囲内である事はチェックしない
 '
-Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte, ByRef endStatus) As String
+Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multiplierCh As String, ByVal radix As Byte) As String
 
     Dim decMultiplier As Byte
     Dim stsOfSub As Variant
@@ -225,7 +173,7 @@ Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multipli
     Dim stringBuilder() As String '割り算結果格納用
     
     '乗数の10進変換
-    decMultiplier = convNCharToByte(multiplierCh, stsOfSub)
+    decMultiplier = convNCharToByte(multiplierCh)
     
     '0掛け&1掛けチェック
     If (decMultiplier = 0) Then
@@ -246,14 +194,14 @@ Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multipli
     Do While (digitIdxOfMultiplicand > 0) '被乗数が残っている間
         
         '対象桁の乗算
-        decDigitOfMultiplicand = convNCharToByte(Mid(multiplicand, digitIdxOfMultiplicand, 1), stsOfSub)
+        decDigitOfMultiplicand = convNCharToByte(Mid(multiplicand, digitIdxOfMultiplicand, 1))
         decDigitOfAns = decDigitOfMultiplicand * decMultiplier + decCarrier
         
-        digitOfAns = convIntPrtOfNPntToIntPrtOfNPnt(decDigitOfAns, 10, radix, stsOfSub) '10進→n進変換
+        digitOfAns = convIntPrtOfNPntToIntPrtOfNPnt(decDigitOfAns, 10, radix) '10進→n進変換
         
         '繰り上がり&解格納
         If (Len(digitOfAns) = 2) Then '繰り上がりあり
-            decCarrier = convNCharToByte(Left(digitOfAns, 1), stsOfSub)
+            decCarrier = convNCharToByte(Left(digitOfAns, 1))
             digitOfAns = Right(digitOfAns, 1)
             
         Else '繰り上がりなし
@@ -269,7 +217,7 @@ Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multipli
     Loop
     
     '最上位桁格納
-    stringBuilder(digitIdxOfMultiplicand) = IIf(decCarrier > 0, convByteToNChar(decCarrier, stsOfSub), "")
+    stringBuilder(digitIdxOfMultiplicand) = IIf(decCarrier > 0, convByteToNChar(decCarrier), "")
     
     multipleByOneDigit = Join(stringBuilder, vbNullString) '文字列連結
     
@@ -315,11 +263,11 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     Dim stsOfSub As Variant
     
     'divisorの不要な0を取り除く
-    divisor = removeLeft0(divisor, stsOfSub)
+    divisor = removeLeft0(divisor)
     
     '<divisorの10進変換>------------------------------------------------------------
     
-    tmp = convIntPrtOfNPntToIntPrtOfNPnt(divisor, radix, 10, stsOfSub)
+    tmp = convIntPrtOfNPntToIntPrtOfNPnt(divisor, radix, 10)
     
     'divisorのLong型変換
     On Error GoTo OVERFLOW
@@ -345,7 +293,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     
     '実行ループ
     Do
-        digitOfDividend = rmnd * radix + convNCharToByte(Mid(dividend, digitIdxOfDividend, 1), stsOfSub) '上位桁の余り & 該当桁
+        digitOfDividend = rmnd * radix + convNCharToByte(Mid(dividend, digitIdxOfDividend, 1)) '上位桁の余り & 該当桁
         
         quot = digitOfDividend \ divisorDec '商
         rmnd = digitOfDividend Mod divisorDec '余り
@@ -354,7 +302,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
         
         '商を追記
         'ある桁に対する除算の商は、基数未満しか取り柄ない
-        stringBuilder(digitIdxOfDividend - 1) = convByteToNChar(quot, stsOfSub)
+        stringBuilder(digitIdxOfDividend - 1) = convByteToNChar(quot)
         
         digitIdxOfDividend = digitIdxOfDividend + 1
         
@@ -376,7 +324,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
         
     Else '余りが存在する時
         
-        remainder = convIntPrtOfNPntToIntPrtOfNPnt(rmnd, 10, radix, statusOfSub)
+        remainder = convIntPrtOfNPntToIntPrtOfNPnt(rmnd, 10, radix)
     
     End If
     
@@ -398,7 +346,7 @@ End Function
 '    intStrが有効な(fromRadix)進値であるかはチェックしない
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByRef endStatus As Variant) As String
+Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
     
     Dim stsOfSub As Variant
     Dim retOfTryConvRadix As String
@@ -407,7 +355,7 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     Dim sizeOfStringBuilder As Long
     Dim rm As String
     
-    intStr = removeLeft0(intStr, stsOfSub)
+    intStr = removeLeft0(intStr)
     
     '変換する基数が同じ場合
     If (fromRadix = toRadix) Then
@@ -427,7 +375,7 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     
     '生成ループ前初期化
     sizeOfStringBuilder = 0
-    chOfToRadix = convRadix(fromRadix, toRadix, stsOfSub)
+    chOfToRadix = convRadix(fromRadix, toRadix)
     strLenOfToRadix = Len(chOfToRadix)
     
     '生成ループ - toRadixによる除算によって解を求める -
@@ -450,12 +398,12 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
         
         intStr = divide(intStr, chOfToRadix, fromRadix, 0, rm, stsOfSub) '16(10進値)以下による除算なので、オーバーフローは発生し得ない
         
-        intStr = removeLeft0(intStr, stsOfSub) '左側の不要な"0"を取り除く
+        intStr = removeLeft0(intStr) '左側の不要な"0"を取り除く
         
         ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
         
         '剰余を(toRadix)進値に変換した結果が算出Digit
-        stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(rm, fromRadix, toRadix, stsOfSub)
+        stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(rm, fromRadix, toRadix)
         
         sizeOfStringBuilder = sizeOfStringBuilder + 1
         
@@ -465,9 +413,9 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     
     '最上位Bit付加
     '剰余を(toRadix)進値に変換した結果が算出Digit
-    stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix, stsOfSub)
+    stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix)
     
-    convIntPrtOfNPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder, stsOfSub), vbNullString) '文字列連結
+    convIntPrtOfNPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
     
 End Function
 
@@ -482,14 +430,14 @@ End Function
 '    frcStrが有効な(fromRadix)進値であるかはチェックしない
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long, ByRef endStatus As Variant) As String
+Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As String
     
     Dim stsOfSub As Variant
     Dim stringBuilder() As String '変換後文字列生成用
     Dim sizeOfStringBuilder As Long
     Dim retOfMultiple As String
     
-    frcStr = removeRight0(frcStr, stsOfSub)
+    frcStr = removeRight0(frcStr)
     
     '変換する基数が同じ場合
     If (fromRadix = toRadix) Then
@@ -506,7 +454,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
     End If
     
     '生成ループ前初期化
-    strOfToRadix = convRadix(fromRadix, toRadix, stsOfSub)
+    strOfToRadix = convRadix(fromRadix, toRadix)
     sizeOfStringBuilder = 0
     lenOfFrcStrB = Len(frcStr)
     
@@ -519,7 +467,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
             
         End If
         
-        frcStr = multiple(frcStr, strOfToRadix, fromRadix, statusOfSub)
+        frcStr = multiple(frcStr, strOfToRadix, fromRadix)
         
         ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
         
@@ -529,7 +477,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
         If (lenOfFrcStrA > lenOfFrcStrB) Then
             tmp = Left(frcStr, lenOfFrcStrA - lenOfFrcStrB)
             frcStr = Right(frcStr, lenOfFrcStrB)
-            increasedDigits = convIntPrtOfNPntToIntPrtOfNPnt(tmp, fromRadix, toRadix, stsOfSub)
+            increasedDigits = convIntPrtOfNPntToIntPrtOfNPnt(tmp, fromRadix, toRadix)
             
         Else
             increasedDigits = "0"
@@ -538,7 +486,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
         
         stringBuilder(sizeOfStringBuilder) = increasedDigits '解を追記
         
-        frcStr = removeRight0(frcStr, stsOfSub) ' 右側の不要な0を取り除く
+        frcStr = removeRight0(frcStr) ' 右側の不要な0を取り除く
         
         lenOfFrcStrB = Len(frcStr)
         sizeOfStringBuilder = sizeOfStringBuilder + 1
@@ -555,7 +503,7 @@ End Function
 '!CAUTION!
 '    chは2~Fの範囲内である事はチェックしない
 '
-Private Function convNCharToByte(ByVal ch As String, ByRef endStatus As Variant) As Byte
+Private Function convNCharToByte(ByVal ch As String) As Byte
     
     Dim toRetByte As Byte
     Dim ascOfA As Integer
@@ -581,7 +529,7 @@ End Function
 '!CAUTION!
 '    bytは0~16の範囲内である事はチェックしない
 '
-Private Function convByteToNChar(ByVal byt As Byte, ByRef endStatus As Variant) As String
+Private Function convByteToNChar(ByVal byt As Byte) As String
     
     Dim toRetStr As String
     
@@ -603,7 +551,7 @@ End Function
 '!CAUTION!
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function convRadix(ByVal fromRadix As Byte, ByVal toRadix As Byte, ByRef endStatus As Variant) As String
+Private Function convRadix(ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
     
     Dim radixTable As Variant
     
@@ -647,8 +595,8 @@ Private Function tryConvRadix(ByVal intStr As String, ByVal fromRadix As Byte, B
     
     'convRadixで解決可能かどうかチェック
     For idxOfRTable = 0 To 16
-        If (intStr = convRadix(fromRadix, idxOfRTable, stsOfSub)) Then '基数変換用テーブルに解があった
-            toRetStr = convRadix(toRadix, idxOfRTable, stsOfSub) '基数変換テーブルから解を返す
+        If (intStr = convRadix(fromRadix, idxOfRTable)) Then '基数変換用テーブルに解があった
+            toRetStr = convRadix(toRadix, idxOfRTable) '基数変換テーブルから解を返す
             Exit For
             
         End If
@@ -675,7 +623,7 @@ End Function
 '!CAUTION!
 '    intStrが有効な数値文字列かどうかはチェックしない
 '
-Private Function removeLeft0(ByVal intStr As String, ByRef endStatus As Variant) As String
+Private Function removeLeft0(ByVal intStr As String) As String
     
     Dim lpIdx As Long
     Dim lpMx As Long
@@ -718,7 +666,7 @@ End Function
 '!CAUTION!
 '    intStrが有効な数値文字列かどうかはチェックしない
 '
-Private Function removeRight0(ByVal intStr As String, ByRef endStatus As Variant) As String
+Private Function removeRight0(ByVal intStr As String) As String
     
     Dim lpIdx As Long
     Dim toRetStr As String
@@ -752,7 +700,7 @@ End Function
 '
 'String配列の順番を入替える
 '
-Private Function invertStringArray(ByRef srcArr() As String, ByRef endStatus As Variant) As String()
+Private Function invertStringArray(ByRef srcArr() As String) As String()
     
     Dim cnt As Long
     Dim cntMx As Long
@@ -771,4 +719,6 @@ Private Function invertStringArray(ByRef srcArr() As String, ByRef endStatus As 
     invertStringArray = retArr
     
 End Function
+
+
 
