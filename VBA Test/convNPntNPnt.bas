@@ -123,6 +123,123 @@ End Function
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
 
 '
+'2数を加算する
+'
+'引数が不正の場合は、以下に応じたCvErrを返却する
+'    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
+'    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'
+Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional ByVal radix As Byte = 10) As Variant
+    
+    Dim intPrtOfVal1 As String
+    Dim frcPrtOfVal1 As String
+    Dim isMinusOfVal1 As Boolean
+    Dim lenOfVal1FrcPrt As Long
+    
+    Dim intPrtOfVal2 As String
+    Dim frcPrtOfVal2 As String
+    Dim isMinusOfVal2 As Boolean
+    Dim lenOfVal2FrcPrt As Long
+    
+    Dim stsOfSub As Variant
+    Dim subtractionWasMinus As Boolean
+    
+    Dim tmpVal1 As Variant
+    Dim tmpVal2 As Variant
+    Dim tmpAns As Variant
+    
+    Dim signOfAns As String
+    Dim intPrtOfAns As Variant
+    Dim frcPrtOfAns As Variant
+    
+    'val1の文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(val1, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
+    If IsError(stsOfSub) Then 'val1はn進値として不正
+        addNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    'valwの文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(val2, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
+    If IsError(stsOfSub) Then 'val2はn進値として不正
+        addNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    '小数部の桁数合わせ
+    lenOfVal1FrcPrt = Len(frcPrtOfVal1)
+    lenOfVal2FrcPrt = Len(frcPrtOfVal2)
+    If (lenOfVal1FrcPrt > lenOfVal2FrcPrt) Then 'val1の桁数が大きい
+        frcPrtOfVal2 = frcPrtOfVal2 & String(lenOfVal1FrcPrt - lenOfVal2FrcPrt, "0") 'val2の右側を0埋め
+        lenOfVal2FrcPrt = Len(frcPrtOfVal2)
+        
+    Else 'val2の桁数が大きい
+        frcPrtOfVal1 = frcPrtOfVal1 & String(lenOfVal2FrcPrt - lenOfVal1FrcPrt, "0") 'val1の右側を0埋め
+        lenOfVal1FrcPrt = Len(frcPrtOfVal1)
+        
+    End If
+    
+    tmpVal1 = intPrtOfVal1 & frcPrtOfVal1
+    tmpVal2 = intPrtOfVal2 & frcPrtOfVal2
+    
+    '加算or減算
+    If (isMinusOfVal1) Then 'val1はマイナス値
+        If (isMinusOfVal2) Then 'val2はマイナス値
+            tmpAns = add(tmpVal1, tmpVal2, radix)
+            signOfAns = "-"
+            
+        Else 'val2はプラス値
+            tmpAns = subtract(tmpVal1, tmpVal2, radix, subtractionWasMinus)
+            If (subtractionWasMinus) Then
+                signOfAns = ""
+            Else
+                signOfAns = "-"
+            End If
+        
+        End If
+        
+    Else 'val1はプラス値
+        If (isMinusOfVal2) Then 'val2はマイナス値
+            tmpAns = subtract(tmpVal1, tmpVal2, radix, subtractionWasMinus)
+            If (subtractionWasMinus) Then
+                signOfAns = "-"
+            Else
+                signOfAns = ""
+            End If
+            
+        Else 'val2はプラス値
+            tmpAns = add(tmpVal1, tmpVal2, radix)
+            signOfAns = ""
+        
+        End If
+    
+    End If
+    
+    '小数点復活
+    intPrtOfAns = Left(tmpAns, Len(tmpAns) - lenOfVal1FrcPrt)
+    frcPrtOfAns = Right(tmpAns, lenOfVal1FrcPrt)
+    
+    '不要な"0"を削除
+    intPrtOfAns = removeLeft0(intPrtOfAns)
+    If (frcPrtOfAns <> "") Then
+        frcPrtOfAns = removeRight0(frcPrtOfAns)
+        If (frcPrtOfAns = "0") Then
+            frcPrtOfAns = ""
+        End If
+    End If
+    
+    '-0確認
+    If ((intPrtOfAns & frcPrtOfAns) = "0") Then
+        signOfAns = ""
+    End If
+    
+    addNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+
+End Function
+
+'
 '数値列がn進数値列かどうかチェックして、
 '整数部と小数部に分解する
 '小数部の記載がない場合は、小数部は空文字を格納する
