@@ -1,6 +1,74 @@
 Attribute VB_Name = "convNPntNPnt"
+'<定数>------------------------------------------------------------------------------------------
+
+Public Const DOT As String = "." '小数点表記
+'
+'-----------------------------------------------------------------------------------------</定数>
+
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
+Public Function TESTseparateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim intPrt As String
+    Dim frcPrt As String
+    Dim isMinus As Boolean
+    TESTseparateToIntAndFrc = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+End Function
+
+Public Function TESTseparateToIntAndFrcByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim intPrt As String
+    Dim frcPrt As String
+    Dim isMinus As Boolean
+    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    TESTseparateToIntAndFrcByRef1 = intPrt
+End Function
+
+Public Function TESTseparateToIntAndFrcByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim intPrt As String
+    Dim frcPrt As String
+    Dim isMinus As Boolean
+    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    TESTseparateToIntAndFrcByRef2 = frcPrt
+End Function
+
+Public Function TESTseparateToIntAndFrcByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim intPrt As String
+    Dim frcPrt As String
+    Dim isMinus As Boolean
+    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    TESTseparateToIntAndFrcByRef3 = isMinus
+End Function
+
+Public Function TESTcheckNPntStr(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim isMinus As Boolean
+    Dim idxOfDot As Long
+    Dim stsOfSub As Variant
+    TESTcheckNPntStr = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+End Function
+
+Public Function TESTcheckNPntStrByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim isMinus As Boolean
+    Dim idxOfDot As Long
+    Dim stsOfSub As Variant
+    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckNPntStrByRef1 = isMinus
+End Function
+
+Public Function TESTcheckNPntStrByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim isMinus As Boolean
+    Dim idxOfDot As Long
+    Dim stsOfSub As Variant
+    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckNPntStrByRef2 = idxOfDot
+End Function
+
+Public Function TESTcheckNPntStrByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    Dim isMinus As Boolean
+    Dim idxOfDot As Long
+    Dim stsOfSub As Variant
+    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckNPntStrByRef3 = stsOfSub
+End Function
+
 Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
     TESTadd = add(val1, val2, radix)
 End Function
@@ -53,6 +121,205 @@ Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
+
+'
+'数値列がn進数値列かどうかチェックして、
+'整数部と小数部に分解する
+'小数部の記載がない場合は、小数部は""文字を格納する
+'
+'成功の場合は0を返却する
+'
+'失敗の場合は以下に応じたCvErrを返却する
+'    　・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
+'    　・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'
+Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
+    
+    Dim retOfCheckNPntStr As Long
+    Dim idxOfDot As Long
+    Dim stsOfSub As Variant
+    Dim lenOfPntStr As Long
+    Dim toRetIsMinus As Boolean
+    Dim toRetIntPrt As String
+    Dim toRetFrcPrt As String
+    
+    lenOfPntStr = Len(pntStr)
+    
+    'n進値として正しいかチェック&符号判定&小数点位置取得
+    retOfCheckNPntStr = checkNPntStr(pntStr, radix, toRetIsMinus, idxOfDot, stsOfSub)
+    If IsError(stsOfSub) Then 'n進値として不正
+        separateToIntAndFrc = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    '整数部抽出開始位置の判定
+    If (toRetIsMinus) Then '(-)値の場合
+        stIdxOfIntPrt = 2
+    Else
+        stIdxOfIntPrt = 1
+    End If
+    
+    '抽出
+    If (idxOfDot = 0) Then '小数部の記載がない場合
+        toRetIntPrt = Mid(pntStr, stIdxOfIntPrt, (lenOfPntStr - stIdxOfIntPrt) + 1)
+        toRetFrcPrt = ""
+        
+    Else '小数部あり
+        toRetIntPrt = Mid(pntStr, stIdxOfIntPrt, idxOfDot - stIdxOfIntPrt)
+        toRetFrcPrt = Right(pntStr, lenOfPntStr - idxOfDot)
+        
+    End If
+    
+    '返却
+    intPrt = toRetIntPrt
+    frcPrt = toRetFrcPrt
+    isMinus = toRetIsMinus
+    separateToIntAndFrc = 0
+    
+End Function
+
+
+'
+'数値列がn進数値列かどうかチェックする
+'
+'返却値
+'    n進値文字列だったの場合はerrCodeに0を格納し、文字長 + 1を返却する
+'    そうでない場合は、errCodeに#NUM!を格納し、
+'    最初に見つかった10進文字以外の文字位置を返却する
+'
+'    以下の場合は、errCodeにエラーコードを格納し、0を返却する
+'    　・radixが2~16以外の場合(エラーコードは#NUM!)
+'    　・引数が空文字かNullの場合(エラーコードは#NULL!)
+'
+'radix
+'    基数(2~16のみ)
+'
+'idxOfDot(ByRef)
+'    小数点文字位置
+'    小数点が無かった場合0
+'
+Private Function checkNPntStr(ByVal pntStr As String, ByVal radix As Byte, ByRef isMinus As Boolean, ByRef idxOfDot As Long, ByRef errCode As Variant) As Long
+    
+    Dim minOkChar1 As Integer
+    Dim maxOkChar1 As Integer
+    Dim minOkChar2 As Integer
+    Dim maxOkChar2 As Integer
+    Dim radixIsBiggerThan10 As Boolean
+    Dim cnt As Long
+    Dim lpMx As Long
+    Dim stCnt As Long
+    Dim foundIdxOfDot As Long '小数点文字が最初に見つかった文字位置
+    Dim ngIdx As Long
+    Dim numOfDigits As Long
+    
+    '引数チェック
+    If (radix < 2) Or (16 < radix) Then
+        errCode = CVErr(xlErrNum) '#NUM!を格納する
+        checkNPntStr = 0
+        Exit Function
+        
+    End If
+    
+    lpMx = Len(pntStr)
+    
+    If (lpMx = 0) Then
+        errCode = CVErr(xlErrNull) '#NULL!を格納する
+        checkNPntStr = 0
+        Exit Function
+        
+    End If
+    
+    '基数からOKな文字コード範囲を作る
+    minOkChar1 = Asc("0")
+    If (radix <= 10) Then
+        maxOkChar1 = Asc(CStr(radix - 1))
+        radixIsBiggerThan10 = False
+        
+    Else
+        maxOkChar1 = Asc("9")
+        minOkChar2 = Asc("A")
+        maxOkChar2 = Asc("A") + (radix - 11)
+        
+        radixIsBiggerThan10 = True
+    
+    End If
+    
+    '符号存在チェック
+    If (Left(pntStr, 1) = "-") Then '符号は(-)
+        isMinus = True
+        stCnt = 2
+        
+    Else '符号は(+)
+        isMinus = False
+        stCnt = 1
+        
+    End If
+    
+    '文字列検査ループ
+    foundIdxOfDot = 0
+    ngIdx = 0
+    numOfDigits = 0
+    For cnt = stCnt To lpMx
+        
+        ch = Mid(pntStr, cnt, 1)
+        chCode = Asc(ch)
+        
+        If (chCode < minOkChar1) Or (maxOkChar1 < chCode) Then  '文字は0~9いずれでもない
+            If IIf(radixIsBiggerThan10, (chCode < minOkChar2) Or (maxOkChar2 < chCode), True) Then '文字はA~Fいずれでもない
+                
+                If (ch = DOT) Then '小数点文字の場合
+                    If (foundIdxOfDot = 0) Then '小数点文字の出現は1回目
+                    
+                        If (numOfDigits = 0) Then '整数部の桁数が0
+                            ngIdx = cnt
+                            Exit For
+                            
+                        End If
+                        
+                        foundIdxOfDot = cnt
+                        numOfDigits = 0
+                    
+                    Else '小数点文字の出現は2回目
+                        ngIdx = cnt
+                        Exit For
+                        
+                    End If
+                
+                Else '文字は数値文字でもなく、小数点文字でもない
+                    ngIdx = cnt
+                    Exit For
+                    
+                End If
+                
+            Else '文字はA~F
+                numOfDigits = numOfDigits + 1 'increment
+            End If
+            
+        Else '文字は0~9
+            numOfDigits = numOfDigits + 1 'increment
+        End If
+        
+    Next cnt
+    
+    If (numOfDigits = 0) And (ngIdx = 0) Then '数値が見つからない場合
+        ngIdx = cnt - 1
+        
+    End If
+    
+    If (ngIdx > 0) Then 'NG文字が存在する場合
+        errCode = CVErr(xlErrNum) '#NUM!を格納する
+        checkNPntStr = ngIdx 'NG文字位置を返却
+        
+    Else 'すべてOKな場合
+    
+        idxOfDot = foundIdxOfDot
+        errCode = 0
+        checkNPntStr = cnt '文字列長 + 1を返却
+        
+    End If
+    
+End Function
 
 '
 '2数を和算する
