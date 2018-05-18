@@ -5,6 +5,17 @@ Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix 
     TESTadd = add(val1, val2, radix)
 End Function
 
+Public Function TESTsubtract(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
+    Dim stsOfSub As Boolean
+    TESTsubtract = subtract(val1, val2, radix, stsOfSub)
+End Function
+
+Public Function TESTsubtractByRef1(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
+    Dim stsOfSub As Boolean
+    x = subtract(val1, val2, radix, stsOfSub)
+    TESTsubtractByRef1 = stsOfSub
+End Function
+
 Public Function TESTmultiple(ByVal multiplicand As String, ByVal multiplier As String, ByVal radix As Byte) As Variant
     TESTmultiple = multiple(multiplicand, multiplier, radix)
 End Function
@@ -53,8 +64,8 @@ End Function
 Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As String
     
     '変数宣言
-    Dim lenOfVal1 As Integer
-    Dim lenOfVal2 As Integer
+    Dim lenOfVal1 As Long
+    Dim lenOfVal2 As Long
     Dim idxOfVal As Long
     Dim stringBuilder() As String
     Dim decDigitOfVal1 As Integer
@@ -90,7 +101,7 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
         decDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1))
         decDigitOfAns = decDigitOfVal1 + decDigitOfVal2 + decCarrier
         
-        '繰り上がり&解格納
+        '繰り上がりチェック
         If (decDigitOfAns >= radix) Then '繰り上がりあり
             decCarrier = 1
             decDigitOfAns = decDigitOfAns - radix
@@ -110,6 +121,138 @@ Private Function add(ByVal val1 As String, ByVal val2 As String, ByVal radix As 
     stringBuilder(idxOfVal) = IIf(decCarrier > 0, "1", "")
     
     add = Join(stringBuilder, vbNullString)
+    
+End Function
+
+'
+'val1からval2を減算する
+'減算結果が(-)値の場合は、resultIsMinusにTRUEを格納する
+'減算結果が(+)値の場合は、resultIsMinusにFALSEを格納する
+'
+'!CAUTION!
+'    val1, val2 が有効なn進値であるかはチェックしない
+'    radixは2~16の範囲内である事はチェックしない
+'
+Private Function subtract(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte, ByRef resultIsMinus As Boolean) As String
+    
+    '変数宣言
+    Dim idxMxOfVal As Long
+    Dim diffIdx As Long
+    Dim val1IsLarger As Integer '0:不明, 1:yes, -1:no
+    Dim lenOfVal1 As Long
+    Dim lenOfVal2 As Long
+    Dim idxOfVal As Long
+    Dim stringBuilder() As String
+    Dim decDigitOfVal1 As Integer
+    Dim decDigitOfVal2 As Integer
+    Dim decCarrier As Integer
+    Dim decDigitOfAns  As Integer
+    
+    '数値列長取得
+    lenOfVal1 = Len(val1)
+    lenOfVal2 = Len(val2)
+    
+    '0埋め確認
+    If (lenOfVal1 > lenOfVal2) Then
+        val2 = String(lenOfVal1 - lenOfVal2, "0") & val2
+        idxOfVal = lenOfVal1
+        
+    Else
+        val1 = String(lenOfVal2 - lenOfVal1, "0") & val1
+        idxOfVal = lenOfVal2
+        
+    End If
+    
+    '<大小比較チェック>--------------------------------------------------------------------
+    
+    diffIdx = 1
+    val1IsLarger = 0
+    Do While (diffIdx <= idxOfVal)
+        
+        decDigitOfVal1 = convNCharToByte(Mid(val1, diffIdx, 1))
+        decDigitOfVal2 = convNCharToByte(Mid(val2, diffIdx, 1))
+        
+        'どちらかが大きかったら break
+        If decDigitOfVal1 > decDigitOfVal2 Then
+            val1IsLarger = 1
+            Exit Do
+        
+        ElseIf decDigitOfVal1 < decDigitOfVal2 Then
+            val1IsLarger = -1
+            Exit Do
+        
+        End If
+        
+        diffIdx = diffIdx + 1
+        
+    Loop
+    
+    'val1とval2数は同じ数値の場合
+    If (val1IsLarger = 0) Then
+        resultIsMinus = False
+        subtract = String(idxOfVal, "0") '0を返却
+        Exit Function
+        
+    End If
+    
+    
+    If (val1IsLarger = 1) Then 'val1の方が大きい数値の場合
+        resultIsMinus = False '(+)を格納
+        
+    Else 'val2の方が大きい数値の場合
+        
+        '2数を入れ替える
+        buf = val1
+        val1 = val2
+        val2 = buf
+        
+        resultIsMinus = True '(-)を格納
+        
+    End If
+    
+    '-------------------------------------------------------------------</大小比較チェック>
+    
+    'ループ前初期化
+    ReDim stringBuilder(idxOfVal) '領域確保
+    decCarrier = 0
+    
+    '解の生成ループ
+    Do While (idxOfVal > 0)
+        
+        '対象桁の減算
+        decDigitOfVal1 = convNCharToByte(Mid(val1, idxOfVal, 1))
+        decDigitOfVal2 = convNCharToByte(Mid(val2, idxOfVal, 1))
+        
+        '繰り下がりチェック
+        If (decDigitOfVal1 = 0) And (decCarrier = -1) Then
+            decCarrier = -1
+            decDigitOfVal1 = radix - 1
+            
+        Else
+            decDigitOfVal1 = decDigitOfVal1 + decCarrier
+            decCarrier = 0
+            
+            If (decDigitOfVal1 < decDigitOfVal2) Then
+                decDigitOfVal1 = radix + decDigitOfVal1
+                decCarrier = -1
+                
+            End If
+            
+        End If
+        
+        decDigitOfAns = decDigitOfVal1 - decDigitOfVal2
+        
+        stringBuilder(idxOfVal) = convByteToNChar(decDigitOfAns) '解を格納
+        
+        idxOfVal = idxOfVal - 1 'decrement
+        
+    Loop
+    
+    '最上位桁格納
+    stringBuilder(idxOfVal) = ""
+    
+    subtract = Join(stringBuilder, vbNullString)
+    
     
 End Function
 
