@@ -584,16 +584,26 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
     
     '変換する基数が同じ場合
     If (fromRadix = toRadix) Then
-        convFrcPrtOfNPntToFrcPrtOfNPnt = frcStr '"0"を取り除いただけの値を返す
-        Exit Function
         
+        If (numOfDigits > 0) Then
+            convFrcPrtOfNPntToFrcPrtOfNPnt = frcStr '"0"を取り除いただけの値を返す
+        Else
+            convFrcPrtOfNPntToFrcPrtOfNPnt = "" '空文字を返す
+        End If
+        
+        Exit Function
     End If
     
     '"0"を変換する場合
     If (frcStr = "0") Then
-        convFrcPrtOfNPntToFrcPrtOfNPnt = "0" '"0"を返す
-        Exit Function
         
+        If (numOfDigits > 0) Then
+            convFrcPrtOfNPntToFrcPrtOfNPnt = "0" '"0"を返す
+        Else
+            convFrcPrtOfNPntToFrcPrtOfNPnt = "" '空文字を返す
+        End If
+        
+        Exit Function
     End If
     
     '生成ループ前初期化
@@ -862,6 +872,4 @@ Private Function invertStringArray(ByRef srcArr() As String) As String()
     invertStringArray = retArr
     
 End Function
-
-
 
