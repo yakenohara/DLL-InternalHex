@@ -1,40 +1,40 @@
 Attribute VB_Name = "convNPntNPnt"
 '<定数>------------------------------------------------------------------------------------------
 
-Public Const DOT As String = "." '小数点表記
+Private Const DOT As String = "." '小数点表記
 '
 '-----------------------------------------------------------------------------------------</定数>
 
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
-Public Function TESTseparateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTseparateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    TESTseparateToIntAndFrc = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    TESTseparateToIntAndFrc = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTseparateToIntAndFrcByRef1(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef1 = intPrt
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTseparateToIntAndFrcByRef2(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef2 = frcPrt
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTseparateToIntAndFrcByRef3(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef3 = isMinus
 End Function
 
@@ -125,7 +125,7 @@ End Function
 '
 '数値列がn進数値列かどうかチェックして、
 '整数部と小数部に分解する
-'小数部の記載がない場合は、小数部は""文字を格納する
+'小数部の記載がない場合は、小数部は空文字を格納する
 '
 '成功の場合は0を返却する
 '
@@ -133,7 +133,14 @@ End Function
 '    　・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
 '    　・数値列が空文字かNullの場合(エラーコードは#NULL!)
 '
-Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
+'radix
+'    基数(2~16のみ)
+'
+'remove0
+'    不要な0(整数部は左側の0、小数部は右側の0)を取り除くかどうか
+'    TRUEを指定して小数部が全て0の場合、小数部は空文字を格納する
+'
+Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
     
     Dim retOfCheckNPntStr As Long
     Dim idxOfDot As Long
@@ -168,6 +175,21 @@ Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte
     Else '小数部あり
         toRetIntPrt = Mid(pntStr, stIdxOfIntPrt, idxOfDot - stIdxOfIntPrt)
         toRetFrcPrt = Right(pntStr, lenOfPntStr - idxOfDot)
+        
+    End If
+    
+    '0削除
+    If (remove0) Then
+        toRetIntPrt = removeLeft0(toRetIntPrt)
+        
+        If (toRetFrcPrt <> "") Then
+            
+            toRetFrcPrt = removeRight0(toRetFrcPrt)
+                
+            If (toRetFrcPrt = "0") Then 'すべて0だったら
+                toRetFrcPrt = ""
+            End If
+        End If
         
     End If
     
