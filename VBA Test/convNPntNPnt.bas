@@ -4,7 +4,7 @@ Attribute VB_Name = "convNPntNPnt"
 Private Const DOT As String = "." '小数点表記
 
 '割り切れない数値に対して何回割り算するか
-Const DEFAULT_LIMIT_OF_FRC_DIGITS As Long = 15
+Const DEFAULT_LIMIT_OF_FRC_DIGITS As Long = 30
 '
 '-----------------------------------------------------------------------------------------</定数>
 
@@ -341,13 +341,14 @@ End Function
 '引数が不正の場合は、以下に応じたCvErrを返却する
 '    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
 '    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'    ・limitOfFrcDigitsが(-)値 (エラーコードは#NUM!)
 '
 '以下の場合は、エラーコードを返却する
 '    ・0割の場合(エラーコードは#DIV/0!)
 '    ・dividend / divisor の数値列内に、Long型で取り扱えない大きな数値がある場合。(エラーコードは#NUM!)
 '
 'limitOfFrcDigits(Optional)
-'    割り切れない数値に対する除算回数制限
+'    求める小数点以下桁数
 '
 Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
 
@@ -363,6 +364,7 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     Dim rm As String
     
     Dim toCutLenOfIntPrtOfTmpAns As Long
+    Dim lenOfTmpAns As Long
     Dim tmpAns As String
     
     Dim signOfAns As String
@@ -385,8 +387,14 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
         
     End If
     
-    '除算
-    tmpAns = divide(intPrtOfVal1 & frcPrtOfVal1, intPrtOfVal2 & frcPrtOfVal2, radix, limitOfFrcDigits, rm, stsOfSub)
+    If (limitOfFrcDigits < 0) Then '小数点以下桁数指定が0未満
+        divideNPntNPnt = CVErr(xlErrNum) '#NUM!を返す
+        Exit Function
+        
+    End If
+    
+    '除算 - 乗数に小数点以下がある場合は、その桁数を小数点以下算出回数に加えないといけない -
+    tmpAns = divide(intPrtOfVal1 & frcPrtOfVal1, intPrtOfVal2 & frcPrtOfVal2, radix, limitOfFrcDigits + Len(frcPrtOfVal2), rm, stsOfSub)
     
     If IsError(stsOfSub) Then '除算処理でエラー
         divideNPntNPnt = stsOfSub 'divideのエラーコードを返す
@@ -395,14 +403,22 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     End If
     
     toCutLenOfIntPrtOfTmpAns = Len(intPrtOfVal1) + Len(frcPrtOfVal2)
+    lenOfTmpAns = Len(tmpAns)
     
     '整数&小数部の切り出し
-    intPrtOfAns = Left(tmpAns, toCutLenOfIntPrtOfTmpAns)
-    frcPrtOfAns = Right(tmpAns, Len(tmpAns) - toCutLenOfIntPrtOfTmpAns)
+    If (toCutLenOfIntPrtOfTmpAns <= lenOfTmpAns) Then '整数部分の桁数はtmpAns内
+        intPrtOfAns = Left(tmpAns, toCutLenOfIntPrtOfTmpAns)
+        frcPrtOfAns = Right(tmpAns, Len(tmpAns) - toCutLenOfIntPrtOfTmpAns)
+        
+    Else '整数部分の桁数はtmpAns内に収まらない
+        intPrtOfAns = tmpAns & String(toCutLenOfIntPrtOfTmpAns - lenOfTmpAns, "0")
+        frcPrtOfAns = ""
+        
+    End If
     
     '不要な"0"を削除
     intPrtOfAns = removeLeft0(intPrtOfAns)
-    If (frcPrtOfAns <> "") Then
+    If (frcPrtOfAns <> "") And (Len(frcPrtOfAns) <> limitOfFrcDigits) Then '小数点以下桁数は指定桁数での算出終了ではない
         frcPrtOfAns = removeRight0(frcPrtOfAns)
         If (frcPrtOfAns = "0") Then
             frcPrtOfAns = ""
