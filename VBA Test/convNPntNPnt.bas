@@ -263,8 +263,8 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier 
     Dim tmpAns As String
     
     Dim signOfAns As String
-    Dim intPrtOfAns As Variant
-    Dim frcPrtOfAns As Variant
+    Dim intPrtOfAns As String
+    Dim frcPrtOfAns As String
     
     'val1の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(multiplicand, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
