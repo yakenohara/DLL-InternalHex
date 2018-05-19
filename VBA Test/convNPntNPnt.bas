@@ -2,6 +2,9 @@ Attribute VB_Name = "convNPntNPnt"
 '<定数>------------------------------------------------------------------------------------------
 
 Private Const DOT As String = "." '小数点表記
+
+'割り切れない数値に対して何回割り算するか
+Const DEFAULT_LIMIT_OF_FRC_DIGITS As Long = 15
 '
 '-----------------------------------------------------------------------------------------</定数>
 
@@ -329,6 +332,104 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier 
     End If
     
     multipleNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+
+End Function
+
+'
+'1st引数を2nd引数で除算する
+'
+'引数が不正の場合は、以下に応じたCvErrを返却する
+'    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
+'    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'
+'以下の場合は、エラーコードを返却する
+'    ・0割の場合(エラーコードは#DIV/0!)
+'    ・dividend / divisor の数値列内に、Long型で取り扱えない大きな数値がある場合。(エラーコードは#NUM!)
+'
+'limitOfFrcDigits(Optional)
+'    割り切れない数値に対する除算回数制限
+'
+Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
+
+    Dim intPrtOfVal1 As String
+    Dim frcPrtOfVal1 As String
+    Dim isMinusOfVal1 As Boolean
+    
+    Dim intPrtOfVal2 As String
+    Dim frcPrtOfVal2 As String
+    Dim isMinusOfVal2 As Boolean
+    
+    Dim stsOfSub As Variant
+    Dim rm As String
+    
+    Dim toCutLenOfIntPrtOfTmpAns As Long
+    Dim tmpAns As String
+    
+    Dim signOfAns As String
+    Dim intPrtOfAns As String
+    Dim frcPrtOfAns As String
+    
+    'val1の文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(dividend, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
+    If IsError(stsOfSub) Then 'val1はn進値として不正
+        divideNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    'val2の文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(divisor, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
+    If IsError(stsOfSub) Then 'val2はn進値として不正
+        divideNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    '除算
+    tmpAns = divide(intPrtOfVal1 & frcPrtOfVal1, intPrtOfVal2 & frcPrtOfVal2, radix, limitOfFrcDigits, rm, stsOfSub)
+    
+    If IsError(stsOfSub) Then '除算処理でエラー
+        divideNPntNPnt = stsOfSub 'divideのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    toCutLenOfIntPrtOfTmpAns = Len(intPrtOfVal1) + Len(frcPrtOfVal2)
+    
+    '整数&小数部の切り出し
+    intPrtOfAns = Left(tmpAns, toCutLenOfIntPrtOfTmpAns)
+    frcPrtOfAns = Right(tmpAns, Len(tmpAns) - toCutLenOfIntPrtOfTmpAns)
+    
+    '不要な"0"を削除
+    intPrtOfAns = removeLeft0(intPrtOfAns)
+    If (frcPrtOfAns <> "") Then
+        frcPrtOfAns = removeRight0(frcPrtOfAns)
+        If (frcPrtOfAns = "0") Then
+            frcPrtOfAns = ""
+        End If
+    End If
+    
+    '符号判定
+    If (isMinusOfVal1 Xor isMinusOfVal2) Then
+        
+        If (intPrtOfAns = "0") And (frcPrtOfAns = "") Then
+            signOfAns = ""
+            
+        Else
+            signOfAns = "-"
+            
+        End If
+    Else
+        signOfAns = ""
+    
+    End If
+    
+    '-0確認
+    If ((intPrtOfAns & frcPrtOfAns) = "0") Then
+        signOfAns = ""
+    End If
+    
+    divideNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
 
 End Function
 
