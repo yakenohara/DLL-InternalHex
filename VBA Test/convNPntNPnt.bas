@@ -144,13 +144,13 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
     Dim stsOfSub As Variant
     Dim subtractionWasMinus As Boolean
     
-    Dim tmpVal1 As Variant
-    Dim tmpVal2 As Variant
-    Dim tmpAns As Variant
+    Dim tmpVal1 As String
+    Dim tmpVal2 As String
+    Dim tmpAns As String
     
     Dim signOfAns As String
-    Dim intPrtOfAns As Variant
-    Dim frcPrtOfAns As Variant
+    Dim intPrtOfAns As String
+    Dim frcPrtOfAns As String
     
     'val1の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(val1, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
@@ -160,7 +160,7 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
         
     End If
     
-    'valwの文字列チェック&小数、整数分解
+    'val2の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(val2, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
     If IsError(stsOfSub) Then 'val2はn進値として不正
         addNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
