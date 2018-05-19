@@ -240,6 +240,99 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
 End Function
 
 '
+'2数を乗算する
+'
+'引数が不正の場合は、以下に応じたCvErrを返却する
+'    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
+'    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'
+Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier As String, Optional radix As Byte = 10) As Variant
+
+    Dim intPrtOfVal1 As String
+    Dim frcPrtOfVal1 As String
+    Dim isMinusOfVal1 As Boolean
+    
+    Dim intPrtOfVal2 As String
+    Dim frcPrtOfVal2 As String
+    Dim isMinusOfVal2 As Boolean
+    
+    Dim stsOfSub As Variant
+    
+    Dim toCutLenOfFrcPrtOfTmpAns As Long
+    Dim lenOfTmpAns As Long
+    Dim tmpAns As String
+    
+    Dim signOfAns As String
+    Dim intPrtOfAns As Variant
+    Dim frcPrtOfAns As Variant
+    
+    'val1の文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(multiplicand, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
+    If IsError(stsOfSub) Then 'val1はn進値として不正
+        multipleNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    'val2の文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(multiplier, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
+    If IsError(stsOfSub) Then 'val2はn進値として不正
+        multipleNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    '乗算
+    tmpAns = multiple(intPrtOfVal1 & frcPrtOfVal1, intPrtOfVal2 & frcPrtOfVal2, radix)
+    
+    toCutLenOfFrcPrtOfTmpAns = Len(frcPrtOfVal1) + Len(frcPrtOfVal2)
+    lenOfTmpAns = Len(tmpAns)
+    
+    '整数&小数部の切り出し
+    If (lenOfTmpAns > toCutLenOfFrcPrtOfTmpAns) Then '少数部分の桁数はtmpAns内
+        intPrtOfAns = Left(tmpAns, (lenOfTmpAns - toCutLenOfFrcPrtOfTmpAns))
+        frcPrtOfAns = Right(tmpAns, toCutLenOfFrcPrtOfTmpAns)
+        
+    Else '少数部分の桁数はtmpAns内に収まらない
+        intPrtOfAns = "0"
+        frcPrtOfAns = String((toCutLenOfFrcPrtOfTmpAns - lenOfTmpAns), "0") & tmpAns
+        
+    End If
+    
+    '不要な"0"を削除
+    intPrtOfAns = removeLeft0(intPrtOfAns)
+    If (frcPrtOfAns <> "") Then
+        frcPrtOfAns = removeRight0(frcPrtOfAns)
+        If (frcPrtOfAns = "0") Then
+            frcPrtOfAns = ""
+        End If
+    End If
+    
+    '符号判定
+    If (isMinusOfVal1 Xor isMinusOfVal2) Then
+        
+        If (intPrtOfAns = "0") And (frcPrtOfAns = "") Then
+            signOfAns = ""
+            
+        Else
+            signOfAns = "-"
+            
+        End If
+    Else
+        signOfAns = ""
+    
+    End If
+    
+    '-0確認
+    If ((intPrtOfAns & frcPrtOfAns) = "0") Then
+        signOfAns = ""
+    End If
+    
+    multipleNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+
+End Function
+
+'
 '数値列がn進数値列かどうかチェックして、
 '整数部と小数部に分解する
 '小数部の記載がない場合は、小数部は空文字を格納する
