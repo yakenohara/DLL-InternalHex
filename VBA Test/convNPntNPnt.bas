@@ -449,6 +449,80 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
 
 End Function
 
+Sub tes()
+    
+    Debug.Print convNPntNPnt("15", 10, 16, 15)
+    
+End Sub
+
+'
+'n進数をn進数に変換する
+'引数が不正の場合は、以下に応じたCvErrを返却する
+'    ・fromRadix or toRadix が2~16以外か、数値列はfromRadix進値として不正の場合(エラーコードは#NUM!)
+'    ・変換元数値列が空文字かNullの場合(エラーコードは#NULL!)
+'    ・limitOfFrcDigitsが(-)値 (エラーコードは#NUM!)
+'
+'fromRadix:
+'    変換元数値列の基数
+'
+'toRadix:
+'    変換先数値列の基数
+'
+'limitOfFrcDigits(Optional):
+'    小数点以下の求める桁数
+'
+Public Function convNPntNPnt(ByVal pntStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
+    
+    Dim intPrtOfFrom As String
+    Dim frcPrtOfFrom As String
+    Dim isMinusOfFrom As Boolean
+    
+    Dim stsOfSub As Variant
+    
+    Dim signOfAns As String
+    Dim intPrtOfAns As String
+    Dim frcPrtOfAns As String
+    
+    '文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(pntStr, fromRadix, True, intPrtOfFrom, frcPrtOfFrom, isMinusOfFrom)
+    If IsError(stsOfSub) Then 'n進値として不正
+        convNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    'toRadixの範囲チェック
+    If ((toRadix < 2) Or (16 < toRadix)) Then '変換先基数は2~16の範囲外
+        convNPntNPnt = CVErr(xlErrNum) '#NUM!を返す
+        Exit Function
+        
+    End If
+    
+    '整数部のn進→n進変換
+    intPrtOfAns = convIntPrtOfNPntToIntPrtOfNPnt(intPrtOfFrom, fromRadix, toRadix)
+    
+    '小数部のn進→n進変換
+    If (frcPrtOfFrom = "") Then '小数部が存在しない場合
+        frcPrtOfAns = ""
+        
+    Else '小数部が存在する場合
+        frcPrtOfAns = convFrcPrtOfNPntToFrcPrtOfNPnt(frcPrtOfFrom, fromRadix, toRadix, limitOfFrcDigits)
+        
+    End If
+    
+    '符号判定
+    If isMinusOfFrom Then
+        signOfAns = "-"
+        
+    Else
+        signOfAns = ""
+    
+    End If
+    
+    convNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    
+End Function
+
 '
 '数値列がn進数値列かどうかチェックして、
 '整数部と小数部に分解する
@@ -1188,6 +1262,7 @@ End Function
 '!CAUTION!
 '    frcStrが有効な(fromRadix)進値であるかはチェックしない
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
+'    numOfDigitsが0以上であるかはチェックしない
 '
 Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As String
     
