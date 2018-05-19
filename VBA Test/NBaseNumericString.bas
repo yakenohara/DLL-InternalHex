@@ -1,4 +1,4 @@
-Attribute VB_Name = "convNPntNPnt"
+Attribute VB_Name = "NBaseNumericString"
 '<定数>------------------------------------------------------------------------------------------
 
 Private Const DOT As String = "." '小数点表記
@@ -448,12 +448,6 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     divideNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
 
 End Function
-
-Sub tes()
-    
-    Debug.Print convNPntNPnt("15", 10, 16, 15)
-    
-End Sub
 
 '
 'n進数をn進数に変換する
