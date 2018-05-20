@@ -518,6 +518,68 @@ Public Function convNPntNPnt(ByVal pntStr As String, ByVal fromRadix As Byte, By
 End Function
 
 '
+'減基数の補数を得る
+'
+'引数が不正の場合は、以下に応じたCvErrを返却する
+'    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
+'    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
+'
+Public Function getDiminishedRadixComplement(ByVal pntStr As String, ByVal radix As Byte) As Variant
+    
+    Dim intPrtOfVal1 As String
+    Dim frcPrtOfVal1 As String
+    Dim isMinusOfVal1 As Boolean
+    
+    Dim stsOfSub As Variant
+    Dim tmpVal1 As String
+    Dim lenOfTmpVal1 As Long
+    Dim stringBuilder() As String
+    Dim tmpAns As String
+    Dim lpCnt As Long
+    
+    Dim signOfAns As String
+    Dim intPrtOfAns As String
+    Dim frcPrtOfAns As String
+    
+    '文字列チェック&小数、整数分解
+    stsOfSub = separateToIntAndFrc(pntStr, radix, False, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
+    If IsError(stsOfSub) Then 'val1はn進値として不正
+        getDiminishedRadixComplement = stsOfSub 'checkNPntStrのエラーコードを返す
+        Exit Function
+        
+    End If
+    
+    tmpVal1 = intPrtOfVal1 & frcPrtOfVal1
+    lenOfTmpVal1 = Len(tmpVal1)
+    ReDim stringBuilder(lenOfTmpVal1)
+    
+    '補数を求めるループ
+    For lpCnt = lenOfTmpVal1 To 1 Step -1
+        stringBuilder(lpCnt) = convByteToNChar((radix - 1) - convNCharToByte(Mid(tmpVal1, lpCnt, 1)))
+        
+    Next lpCnt
+    
+    tmpAns = Join(stringBuilder, vbNullString)
+    
+    '整数&小数部の切り出し
+    intPrtOfAns = Left(tmpAns, Len(intPrtOfVal1))
+    frcPrtOfAns = Right(tmpAns, Len(frcPrtOfVal1))
+    
+    '符号判定
+    If (isMinusOfVal1) Then '(-)値の場合
+        signOfAns = "-"
+        
+    Else
+        signOfAns = ""
+        
+    End If
+    
+    getDiminishedRadixComplement = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    
+
+End Function
+
+'
 '数値列がn進数値列かどうかチェックして、
 '整数部と小数部に分解する
 '小数部の記載がない場合は、小数部は空文字を格納する
