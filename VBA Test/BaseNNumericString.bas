@@ -41,35 +41,35 @@ Public Function TESTseparateToIntAndFrcByRef3(ByVal pntStr As String, ByVal radi
     TESTseparateToIntAndFrcByRef3 = isMinus
 End Function
 
-Public Function TESTcheckNPntStr(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumber(ByVal pntStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    TESTcheckNPntStr = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckBaseNNumber = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
 End Function
 
-Public Function TESTcheckNPntStrByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
-    TESTcheckNPntStrByRef1 = isMinus
+    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckBaseNNumberByRef1 = isMinus
 End Function
 
-Public Function TESTcheckNPntStrByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
-    TESTcheckNPntStrByRef2 = idxOfDot
+    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckBaseNNumberByRef2 = idxOfDot
 End Function
 
-Public Function TESTcheckNPntStrByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkNPntStr(pntStr, radix, isMinus, idxOfDot, stsOfSub)
-    TESTcheckNPntStrByRef3 = stsOfSub
+    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckBaseNNumberByRef3 = stsOfSub
 End Function
 
 Public Function TESTadd(ByVal val1 As String, ByVal val2 As String, ByVal radix As Byte) As Variant
@@ -115,12 +115,12 @@ Public Function TESTdivideByRef2(ByVal dividend As String, ByVal divisor As Stri
     TESTdivideByRef2 = stsOfSub
 End Function
 
-Public Function TESTconvIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
-    TESTconvIntPrtOfNPntToIntPrtOfNPnt = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix)
+Public Function TESTconvRadixOfInt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As Variant
+    TESTconvRadixOfInt = convRadixOfInt(intStr, fromRadix, toRadix)
 End Function
 
-Public Function TESTconvFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
-    TESTconvFrcPrtOfNPntToFrcPrtOfNPnt = convFrcPrtOfNPntToFrcPrtOfNPnt(frcStr, fromRadix, toRadix, numOfDigits)
+Public Function TESTconvRadixOfFrc(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As Variant
+    TESTconvRadixOfFrc = convRadixOfFrc(frcStr, fromRadix, toRadix, numOfDigits)
 End Function
 '
 '--------------------------------------------------------------------------------------------------------------------</PrivateFunction用テスト関数>
@@ -132,7 +132,7 @@ End Function
 '    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
 '    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
 '
-Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional ByVal radix As Byte = 10) As Variant
+Public Function addBaseNNumber(ByVal val1 As String, ByVal val2 As String, Optional ByVal radix As Byte = 10) As Variant
     
     Dim intPrtOfVal1 As String
     Dim frcPrtOfVal1 As String
@@ -158,7 +158,7 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
     'val1の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(val1, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     If IsError(stsOfSub) Then 'val1はn進値として不正
-        addNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        addBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -166,7 +166,7 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
     'val2の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(val2, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
     If IsError(stsOfSub) Then 'val2はn進値として不正
-        addNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        addBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -238,7 +238,7 @@ Public Function addNPntNPnt(ByVal val1 As String, ByVal val2 As String, Optional
         signOfAns = ""
     End If
     
-    addNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    addBaseNNumber = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
 
 End Function
 
@@ -249,7 +249,7 @@ End Function
 '    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
 '    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
 '
-Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier As String, Optional radix As Byte = 10) As Variant
+Public Function multipleBaseNNumber(ByVal multiplicand As String, ByVal multiplier As String, Optional radix As Byte = 10) As Variant
 
     Dim intPrtOfVal1 As String
     Dim frcPrtOfVal1 As String
@@ -272,7 +272,7 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier 
     'val1の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(multiplicand, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     If IsError(stsOfSub) Then 'val1はn進値として不正
-        multipleNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        multipleBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -280,7 +280,7 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier 
     'val2の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(multiplier, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
     If IsError(stsOfSub) Then 'val2はn進値として不正
-        multipleNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        multipleBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -331,7 +331,7 @@ Public Function multipleNPntNPnt(ByVal multiplicand As String, ByVal multiplier 
         signOfAns = ""
     End If
     
-    multipleNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    multipleBaseNNumber = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
 
 End Function
 
@@ -350,7 +350,7 @@ End Function
 'limitOfFrcDigits(Optional)
 '    求める小数点以下桁数
 '
-Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
+Public Function divideBaseNNumber(ByVal dividend As String, ByVal divisor As String, Optional ByVal radix As Byte = 10, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
 
     Dim intPrtOfVal1 As String
     Dim frcPrtOfVal1 As String
@@ -374,7 +374,7 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     'val1の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(dividend, radix, True, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     If IsError(stsOfSub) Then 'val1はn進値として不正
-        divideNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        divideBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -382,13 +382,13 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     'val2の文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(divisor, radix, True, intPrtOfVal2, frcPrtOfVal2, isMinusOfVal2)
     If IsError(stsOfSub) Then 'val2はn進値として不正
-        divideNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        divideBaseNNumber = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
     
     If (limitOfFrcDigits < 0) Then '小数点以下桁数指定が0未満
-        divideNPntNPnt = CVErr(xlErrNum) '#NUM!を返す
+        divideBaseNNumber = CVErr(xlErrNum) '#NUM!を返す
         Exit Function
         
     End If
@@ -397,7 +397,7 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
     tmpAns = divide(intPrtOfVal1 & frcPrtOfVal1, intPrtOfVal2 & frcPrtOfVal2, radix, limitOfFrcDigits + Len(frcPrtOfVal2), rm, stsOfSub)
     
     If IsError(stsOfSub) Then '除算処理でエラー
-        divideNPntNPnt = stsOfSub 'divideのエラーコードを返す
+        divideBaseNNumber = stsOfSub 'divideのエラーコードを返す
         Exit Function
         
     End If
@@ -445,7 +445,7 @@ Public Function divideNPntNPnt(ByVal dividend As String, ByVal divisor As String
         signOfAns = ""
     End If
     
-    divideNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    divideBaseNNumber = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
 
 End Function
 
@@ -465,7 +465,7 @@ End Function
 'limitOfFrcDigits(Optional):
 '    小数点以下の求める桁数
 '
-Public Function convNPntNPnt(ByVal pntStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
+Public Function convRadix(ByVal pntStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
     
     Dim intPrtOfFrom As String
     Dim frcPrtOfFrom As String
@@ -480,27 +480,27 @@ Public Function convNPntNPnt(ByVal pntStr As String, ByVal fromRadix As Byte, By
     '文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(pntStr, fromRadix, True, intPrtOfFrom, frcPrtOfFrom, isMinusOfFrom)
     If IsError(stsOfSub) Then 'n進値として不正
-        convNPntNPnt = stsOfSub 'checkNPntStrのエラーコードを返す
+        convRadix = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
     
     'toRadixの範囲チェック
     If ((toRadix < 2) Or (16 < toRadix)) Then '変換先基数は2~16の範囲外
-        convNPntNPnt = CVErr(xlErrNum) '#NUM!を返す
+        convRadix = CVErr(xlErrNum) '#NUM!を返す
         Exit Function
         
     End If
     
     '整数部のn進→n進変換
-    intPrtOfAns = convIntPrtOfNPntToIntPrtOfNPnt(intPrtOfFrom, fromRadix, toRadix)
+    intPrtOfAns = convRadixOfInt(intPrtOfFrom, fromRadix, toRadix)
     
     '小数部のn進→n進変換
     If (frcPrtOfFrom = "") Then '小数部が存在しない場合
         frcPrtOfAns = ""
         
     Else '小数部が存在する場合
-        frcPrtOfAns = convFrcPrtOfNPntToFrcPrtOfNPnt(frcPrtOfFrom, fromRadix, toRadix, limitOfFrcDigits)
+        frcPrtOfAns = convRadixOfFrc(frcPrtOfFrom, fromRadix, toRadix, limitOfFrcDigits)
         
     End If
     
@@ -513,7 +513,7 @@ Public Function convNPntNPnt(ByVal pntStr As String, ByVal fromRadix As Byte, By
     
     End If
     
-    convNPntNPnt = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
+    convRadix = signOfAns & intPrtOfAns & IIf(frcPrtOfAns = "", "", DOT & frcPrtOfAns)
     
 End Function
 
@@ -544,7 +544,7 @@ Public Function getDiminishedRadixComplement(ByVal pntStr As String, ByVal radix
     '文字列チェック&小数、整数分解
     stsOfSub = separateToIntAndFrc(pntStr, radix, False, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     If IsError(stsOfSub) Then 'val1はn進値として不正
-        getDiminishedRadixComplement = stsOfSub 'checkNPntStrのエラーコードを返す
+        getDiminishedRadixComplement = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -599,7 +599,7 @@ End Function
 '
 Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
     
-    Dim retOfCheckNPntStr As Long
+    Dim retOfCheckBaseNNumber As Long
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
     Dim lenOfPntStr As Long
@@ -610,9 +610,9 @@ Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte
     lenOfPntStr = Len(pntStr)
     
     'n進値として正しいかチェック&符号判定&小数点位置取得
-    retOfCheckNPntStr = checkNPntStr(pntStr, radix, toRetIsMinus, idxOfDot, stsOfSub)
+    retOfCheckBaseNNumber = checkBaseNNumber(pntStr, radix, toRetIsMinus, idxOfDot, stsOfSub)
     If IsError(stsOfSub) Then 'n進値として不正
-        separateToIntAndFrc = stsOfSub 'checkNPntStrのエラーコードを返す
+        separateToIntAndFrc = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
         
     End If
@@ -678,7 +678,7 @@ End Function
 '    小数点文字位置
 '    小数点が無かった場合0
 '
-Private Function checkNPntStr(ByVal pntStr As String, ByVal radix As Byte, ByRef isMinus As Boolean, ByRef idxOfDot As Long, ByRef errCode As Variant) As Long
+Private Function checkBaseNNumber(ByVal pntStr As String, ByVal radix As Byte, ByRef isMinus As Boolean, ByRef idxOfDot As Long, ByRef errCode As Variant) As Long
     
     Dim minOkChar1 As Integer
     Dim maxOkChar1 As Integer
@@ -695,7 +695,7 @@ Private Function checkNPntStr(ByVal pntStr As String, ByVal radix As Byte, ByRef
     '引数チェック
     If (radix < 2) Or (16 < radix) Then
         errCode = CVErr(xlErrNum) '#NUM!を格納する
-        checkNPntStr = 0
+        checkBaseNNumber = 0
         Exit Function
         
     End If
@@ -704,7 +704,7 @@ Private Function checkNPntStr(ByVal pntStr As String, ByVal radix As Byte, ByRef
     
     If (lpMx = 0) Then
         errCode = CVErr(xlErrNull) '#NULL!を格納する
-        checkNPntStr = 0
+        checkBaseNNumber = 0
         Exit Function
         
     End If
@@ -788,13 +788,13 @@ Private Function checkNPntStr(ByVal pntStr As String, ByVal radix As Byte, ByRef
     
     If (ngIdx > 0) Then 'NG文字が存在する場合
         errCode = CVErr(xlErrNum) '#NUM!を格納する
-        checkNPntStr = ngIdx 'NG文字位置を返却
+        checkBaseNNumber = ngIdx 'NG文字位置を返却
         
     Else 'すべてOKな場合
     
         idxOfDot = foundIdxOfDot
         errCode = 0
-        checkNPntStr = cnt '文字列長 + 1を返却
+        checkBaseNNumber = cnt '文字列長 + 1を返却
         
     End If
     
@@ -1086,7 +1086,7 @@ Private Function multipleByOneDigit(ByVal multiplicand As String, ByVal multipli
         decDigitOfMultiplicand = convNCharToByte(Mid(multiplicand, digitIdxOfMultiplicand, 1))
         decDigitOfAns = decDigitOfMultiplicand * decMultiplier + decCarrier
         
-        digitOfAns = convIntPrtOfNPntToIntPrtOfNPnt(decDigitOfAns, 10, radix) '10進→n進変換
+        digitOfAns = convRadixOfInt(decDigitOfAns, 10, radix) '10進→n進変換
         
         '繰り上がり&解格納
         If (Len(digitOfAns) = 2) Then '繰り上がりあり
@@ -1156,7 +1156,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
     
     '<divisorの10進変換>------------------------------------------------------------
     
-    tmp = convIntPrtOfNPntToIntPrtOfNPnt(divisor, radix, 10)
+    tmp = convRadixOfInt(divisor, radix, 10)
     
     'divisorのLong型変換
     On Error GoTo OVERFLOW
@@ -1213,7 +1213,7 @@ Private Function divide(ByVal dividend As String, ByVal divisor As String, ByVal
         
     Else '余りが存在する時
         
-        remainder = convIntPrtOfNPntToIntPrtOfNPnt(rmnd, 10, radix)
+        remainder = convRadixOfInt(rmnd, 10, radix)
     
     End If
     
@@ -1235,10 +1235,10 @@ End Function
 '    intStrが有効な(fromRadix)進値であるかはチェックしない
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
+Private Function convRadixOfInt(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
     
     Dim stsOfSub As Variant
-    Dim retOfTryConvRadix As String
+    Dim retOfTryConvBasicRadix As String
     Dim strLenOfToRadix As Long
     Dim stringBuilder() As String '変換後文字列生成用
     Dim sizeOfStringBuilder As Long
@@ -1248,23 +1248,23 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     
     '変換する基数が同じ場合
     If (fromRadix = toRadix) Then
-        convIntPrtOfNPntToIntPrtOfNPnt = intStr '"0"を取り除いただけの値を返す
+        convRadixOfInt = intStr '"0"を取り除いただけの値を返す
         Exit Function
         
     End If
     
-    'convRadixで解決可能かどうかチェック
-    retOfTryConvRadix = tryConvRadix(intStr, fromRadix, toRadix, stsOfSub)
+    'convBasicRadixで解決可能かどうかチェック
+    retOfTryConvBasicRadix = tryConvBasicRadix(intStr, fromRadix, toRadix, stsOfSub)
     
-    If (retOfTryConvRadix <> "") Then '基数変換用テーブルに解があった
-        convIntPrtOfNPntToIntPrtOfNPnt = retOfTryConvRadix
+    If (retOfTryConvBasicRadix <> "") Then '基数変換用テーブルに解があった
+        convRadixOfInt = retOfTryConvBasicRadix
         Exit Function
         
     End If
     
     '生成ループ前初期化
     sizeOfStringBuilder = 0
-    chOfToRadix = convRadix(fromRadix, toRadix)
+    chOfToRadix = convBasicRadix(fromRadix, toRadix)
     strLenOfToRadix = Len(chOfToRadix)
     
     '生成ループ - toRadixによる除算によって解を求める -
@@ -1272,11 +1272,11 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
         
         If (Len(intStr) <= strLenOfToRadix) Then
             
-            retOfTryConvRadix = tryConvRadix(intStr, fromRadix, 10, stsOfSub)
+            retOfTryConvBasicRadix = tryConvBasicRadix(intStr, fromRadix, 10, stsOfSub)
             
-            If (retOfTryConvRadix <> "") Then
+            If (retOfTryConvBasicRadix <> "") Then
                 
-                If (CByte(retOfTryConvRadix) < toRadix) Then '基数で割れる数がなくなった ※必ず retOfTryConvRadix > 0 とはなる ※
+                If (CByte(retOfTryConvBasicRadix) < toRadix) Then '基数で割れる数がなくなった ※必ず retOfTryConvBasicRadix > 0 とはなる ※
                     Exit Do
                     
                 End If
@@ -1292,7 +1292,7 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
         ReDim Preserve stringBuilder(sizeOfStringBuilder) '領域拡張
         
         '剰余を(toRadix)進値に変換した結果が算出Digit
-        stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(rm, fromRadix, toRadix)
+        stringBuilder(sizeOfStringBuilder) = convRadixOfInt(rm, fromRadix, toRadix)
         
         sizeOfStringBuilder = sizeOfStringBuilder + 1
         
@@ -1302,9 +1302,9 @@ Private Function convIntPrtOfNPntToIntPrtOfNPnt(ByVal intStr As String, ByVal fr
     
     '最上位Bit付加
     '剰余を(toRadix)進値に変換した結果が算出Digit
-    stringBuilder(sizeOfStringBuilder) = convIntPrtOfNPntToIntPrtOfNPnt(intStr, fromRadix, toRadix)
+    stringBuilder(sizeOfStringBuilder) = convRadixOfInt(intStr, fromRadix, toRadix)
     
-    convIntPrtOfNPntToIntPrtOfNPnt = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
+    convRadixOfInt = Join(invertStringArray(stringBuilder), vbNullString) '文字列連結
     
 End Function
 
@@ -1320,7 +1320,7 @@ End Function
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '    numOfDigitsが0以上であるかはチェックしない
 '
-Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As String
+Private Function convRadixOfFrc(ByVal frcStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByVal numOfDigits As Long) As String
     
     Dim stsOfSub As Variant
     Dim stringBuilder() As String '変換後文字列生成用
@@ -1333,9 +1333,9 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
     If (fromRadix = toRadix) Then
         
         If (numOfDigits > 0) Then
-            convFrcPrtOfNPntToFrcPrtOfNPnt = frcStr '"0"を取り除いただけの値を返す
+            convRadixOfFrc = frcStr '"0"を取り除いただけの値を返す
         Else
-            convFrcPrtOfNPntToFrcPrtOfNPnt = "" '空文字を返す
+            convRadixOfFrc = "" '空文字を返す
         End If
         
         Exit Function
@@ -1345,16 +1345,16 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
     If (frcStr = "0") Then
         
         If (numOfDigits > 0) Then
-            convFrcPrtOfNPntToFrcPrtOfNPnt = "0" '"0"を返す
+            convRadixOfFrc = "0" '"0"を返す
         Else
-            convFrcPrtOfNPntToFrcPrtOfNPnt = "" '空文字を返す
+            convRadixOfFrc = "" '空文字を返す
         End If
         
         Exit Function
     End If
     
     '生成ループ前初期化
-    strOfToRadix = convRadix(fromRadix, toRadix)
+    strOfToRadix = convBasicRadix(fromRadix, toRadix)
     sizeOfStringBuilder = 0
     lenOfFrcStrB = Len(frcStr)
     
@@ -1377,7 +1377,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
         If (lenOfFrcStrA > lenOfFrcStrB) Then
             tmp = Left(frcStr, lenOfFrcStrA - lenOfFrcStrB)
             frcStr = Right(frcStr, lenOfFrcStrB)
-            increasedDigits = convIntPrtOfNPntToIntPrtOfNPnt(tmp, fromRadix, toRadix)
+            increasedDigits = convRadixOfInt(tmp, fromRadix, toRadix)
             
         Else
             increasedDigits = "0"
@@ -1393,7 +1393,7 @@ Private Function convFrcPrtOfNPntToFrcPrtOfNPnt(ByVal frcStr As String, ByVal fr
         
     Loop
     
-    convFrcPrtOfNPntToFrcPrtOfNPnt = Join(stringBuilder, vbNullString)
+    convRadixOfFrc = Join(stringBuilder, vbNullString)
 
 End Function
 
@@ -1451,7 +1451,7 @@ End Function
 '!CAUTION!
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function convRadix(ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
+Private Function convBasicRadix(ByVal fromRadix As Byte, ByVal toRadix As Byte) As String
     
     Dim radixTable As Variant
     
@@ -1476,27 +1476,27 @@ Private Function convRadix(ByVal fromRadix As Byte, ByVal toRadix As Byte) As St
         Array("0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F", "10") _
     )
     
-    convRadix = radixTable(fromRadix)(toRadix)
+    convBasicRadix = radixTable(fromRadix)(toRadix)
     
 End Function
 
 '
-'convRadixを使ってN進→N進変換をトライする
+'convBasicRadixを使ってN進→N進変換をトライする
 '変換成功の場合は、変換後のN進値を返す
 '失敗の場合は、endStatusに#N/A!を格納し、空文字を返す
 '
 '!CAUTION!
 '    fromRadix,toRadixは2~16の範囲内である事はチェックしない
 '
-Private Function tryConvRadix(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByRef endStatus As Variant) As String
+Private Function tryConvBasicRadix(ByVal intStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, ByRef endStatus As Variant) As String
     
     Dim idxOfRTable As Byte
     Dim toRetStr As String
     
-    'convRadixで解決可能かどうかチェック
+    'convBasicRadixで解決可能かどうかチェック
     For idxOfRTable = 0 To 16
-        If (intStr = convRadix(fromRadix, idxOfRTable)) Then '基数変換用テーブルに解があった
-            toRetStr = convRadix(toRadix, idxOfRTable) '基数変換テーブルから解を返す
+        If (intStr = convBasicRadix(fromRadix, idxOfRTable)) Then '基数変換用テーブルに解があった
+            toRetStr = convBasicRadix(toRadix, idxOfRTable) '基数変換テーブルから解を返す
             Exit For
             
         End If
@@ -1509,7 +1509,7 @@ Private Function tryConvRadix(ByVal intStr As String, ByVal fromRadix As Byte, B
     
     End If
     
-    tryConvRadix = toRetStr
+    tryConvBasicRadix = toRetStr
     
 End Function
 
@@ -1619,4 +1619,6 @@ Private Function invertStringArray(ByRef srcArr() As String) As String()
     invertStringArray = retArr
     
 End Function
+
+
 
