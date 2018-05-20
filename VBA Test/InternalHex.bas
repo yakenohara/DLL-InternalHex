@@ -61,9 +61,9 @@ Dim wsh As Object 'chdir用
 '文字列が数値に変換できない場合は#NUM!を返す
 'dllが存在しない場合は#VALUE!を返す
 '
-Public Function convDecPntStrToCDoubleAndGetInternalHex(ByVal str As String) As Variant
+Public Function convDecStrToCDoubleAndGetInternalHex(ByVal str As String) As Variant
     
-    convDecPntStrToCDoubleAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 0)
+    convDecStrToCDoubleAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 0)
     
 End Function
 
@@ -73,9 +73,9 @@ End Function
 '文字列が数値に変換できない場合は#NUM!を返す
 'dllが存在しない場合は#VALUE!を返す
 '
-Public Function convDecPntStrToCFloatAndGetInternalHex(ByVal str As String) As Variant
+Public Function convDecStrToCFloatAndGetInternalHex(ByVal str As String) As Variant
     
-    convDecPntStrToCFloatAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 1)
+    convDecStrToCFloatAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 1)
     
 End Function
 
@@ -85,9 +85,9 @@ End Function
 '文字列が数値に変換できない場合は#NUM!を返す
 'dllが存在しない場合は#VALUE!を返す
 '
-Public Function convDecIntStrToCLongAndGetInternalHex(ByVal str As String) As Variant
+Public Function convDecStrToCLongAndGetInternalHex(ByVal str As String) As Variant
     
-    convDecIntStrToCLongAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 2)
+    convDecStrToCLongAndGetInternalHex = callConvDecStrToOperandAndGetInternalHex(str, 2)
     
 End Function
 
@@ -144,85 +144,85 @@ End Function
 '
 'doubleの内部表現(hex)で加算する
 '
-Public Function addtionDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    addtionDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 0)
+Public Function addtionCDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    addtionCDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 0)
 End Function
 
 '
 'doubleの内部表現(hex)で減算する
 '
-Public Function substractionDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    substractionDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 1)
+Public Function substractionCDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    substractionCDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 1)
 End Function
 
 '
 'doubleの内部表現(hex)で乗算する
 '
-Public Function multiplicationDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    multiplicationDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 2)
+Public Function multiplicationCDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    multiplicationCDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 2)
 End Function
 
 '
 'doubleの内部表現(hex)で除算する
 '
-Public Function divisionDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    divisionDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 3)
+Public Function divisionCDoubleByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    divisionCDoubleByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 0, 3)
 End Function
 
 '
 'Floatの内部表現(hex)で加算する
 '
-Public Function addtionFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    addtionFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 0)
+Public Function addtionCFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    addtionCFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 0)
 End Function
 
 '
 'Floatの内部表現(hex)で減算する
 '
-Public Function substractionFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    substractionFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 1)
+Public Function substractionCFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    substractionCFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 1)
 End Function
 
 '
 'Floatの内部表現(hex)で乗算する
 '
-Public Function multiplicationFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    multiplicationFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 2)
+Public Function multiplicationCFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    multiplicationCFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 2)
 End Function
 
 '
 'Floatの内部表現(hex)で除算する
 '
-Public Function divisionFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    divisionFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 3)
+Public Function divisionCFloatByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    divisionCFloatByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 1, 3)
 End Function
 
 '
 'Longの内部表現(hex)で加算する
 '
-Public Function addtionLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    addtionLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 0)
+Public Function addtionCLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    addtionCLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 0)
 End Function
 
 '
 'Longの内部表現(hex)で減算する
 '
-Public Function substractionLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    substractionLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 1)
+Public Function substractionCLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    substractionCLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 1)
 End Function
 
 '
 'Longの内部表現(hex)で乗算する
 '
-Public Function multiplicationLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    multiplicationLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 2)
+Public Function multiplicationCLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    multiplicationCLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 2)
 End Function
 
 '
 'Longの内部表現(hex)で除算する
 '
-Public Function divisionLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
-    divisionLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 3)
+Public Function divisionCLongByInternalHex(ByVal firstValue As String, ByVal secondValue As String) As Variant
+    divisionCLongByInternalHex = callOperateArithmeticByInternalHex(firstValue, secondValue, 2, 3)
 End Function
 
 '
@@ -335,4 +335,3 @@ ERR:
     Resume Next
     
 End Function
-
