@@ -1,4 +1,4 @@
-Attribute VB_Name = "BaseN_NumericString"
+Attribute VB_Name = "BaseNNumericString"
 '<íËêî>------------------------------------------------------------------------------------------
 
 Private Const DOT As String = "." 'è¨êîì_ï\ãL
