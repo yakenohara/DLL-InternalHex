@@ -10,65 +10,65 @@ Const DEFAULT_LIMIT_OF_FRC_DIGITS As Long = 30
 
 '<PrivateFunction用テスト関数>---------------------------------------------------------------------------------------------------------------------
 '
-Public Function TESTseparateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
+Public Function TESTseparateToIntAndFrc(ByVal baseNNumericStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    TESTseparateToIntAndFrc = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
+    TESTseparateToIntAndFrc = separateToIntAndFrc(baseNNumericStr, radix, remove0, intPrt, frcPrt, isMinus)
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef1(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
+Public Function TESTseparateToIntAndFrcByRef1(ByVal baseNNumericStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(baseNNumericStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef1 = intPrt
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef2(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
+Public Function TESTseparateToIntAndFrcByRef2(ByVal baseNNumericStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(baseNNumericStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef2 = frcPrt
 End Function
 
-Public Function TESTseparateToIntAndFrcByRef3(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
+Public Function TESTseparateToIntAndFrcByRef3(ByVal baseNNumericStr As String, ByVal radix As Byte, ByVal remove0 As Boolean) As Variant
     Dim intPrt As String
     Dim frcPrt As String
     Dim isMinus As Boolean
-    x = separateToIntAndFrc(pntStr, radix, remove0, intPrt, frcPrt, isMinus)
+    x = separateToIntAndFrc(baseNNumericStr, radix, remove0, intPrt, frcPrt, isMinus)
     TESTseparateToIntAndFrcByRef3 = isMinus
 End Function
 
-Public Function TESTcheckBaseNNumber(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumber(ByVal baseNNumericStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    TESTcheckBaseNNumber = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    TESTcheckBaseNNumber = checkBaseNNumber(baseNNumericStr, radix, isMinus, idxOfDot, stsOfSub)
 End Function
 
-Public Function TESTcheckBaseNNumberByRef1(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef1(ByVal baseNNumericStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    x = checkBaseNNumber(baseNNumericStr, radix, isMinus, idxOfDot, stsOfSub)
     TESTcheckBaseNNumberByRef1 = isMinus
 End Function
 
-Public Function TESTcheckBaseNNumberByRef2(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef2(ByVal baseNNumericStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    x = checkBaseNNumber(baseNNumericStr, radix, isMinus, idxOfDot, stsOfSub)
     TESTcheckBaseNNumberByRef2 = idxOfDot
 End Function
 
-Public Function TESTcheckBaseNNumberByRef3(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function TESTcheckBaseNNumberByRef3(ByVal baseNNumericStr As String, ByVal radix As Byte) As Variant
     Dim isMinus As Boolean
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    x = checkBaseNNumber(pntStr, radix, isMinus, idxOfDot, stsOfSub)
+    x = checkBaseNNumber(baseNNumericStr, radix, isMinus, idxOfDot, stsOfSub)
     TESTcheckBaseNNumberByRef3 = stsOfSub
 End Function
 
@@ -465,7 +465,7 @@ End Function
 'limitOfFrcDigits(Optional):
 '    小数点以下の求める桁数
 '
-Public Function convRadix(ByVal pntStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
+Public Function convRadix(ByVal baseNNumericStr As String, ByVal fromRadix As Byte, ByVal toRadix As Byte, Optional ByVal limitOfFrcDigits As Long = DEFAULT_LIMIT_OF_FRC_DIGITS) As Variant
     
     Dim intPrtOfFrom As String
     Dim frcPrtOfFrom As String
@@ -478,7 +478,7 @@ Public Function convRadix(ByVal pntStr As String, ByVal fromRadix As Byte, ByVal
     Dim frcPrtOfAns As String
     
     '文字列チェック&小数、整数分解
-    stsOfSub = separateToIntAndFrc(pntStr, fromRadix, True, intPrtOfFrom, frcPrtOfFrom, isMinusOfFrom)
+    stsOfSub = separateToIntAndFrc(baseNNumericStr, fromRadix, True, intPrtOfFrom, frcPrtOfFrom, isMinusOfFrom)
     If IsError(stsOfSub) Then 'n進値として不正
         convRadix = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
@@ -524,7 +524,7 @@ End Function
 '    ・radixが2~16以外か、数値列はn進値として不正の場合(エラーコードは#NUM!)
 '    ・数値列が空文字かNullの場合(エラーコードは#NULL!)
 '
-Public Function getDiminishedRadixComplement(ByVal pntStr As String, ByVal radix As Byte) As Variant
+Public Function getDiminishedRadixComplement(ByVal baseNNumericStr As String, ByVal radix As Byte) As Variant
     
     Dim intPrtOfVal1 As String
     Dim frcPrtOfVal1 As String
@@ -542,7 +542,7 @@ Public Function getDiminishedRadixComplement(ByVal pntStr As String, ByVal radix
     Dim frcPrtOfAns As String
     
     '文字列チェック&小数、整数分解
-    stsOfSub = separateToIntAndFrc(pntStr, radix, False, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
+    stsOfSub = separateToIntAndFrc(baseNNumericStr, radix, False, intPrtOfVal1, frcPrtOfVal1, isMinusOfVal1)
     If IsError(stsOfSub) Then 'val1はn進値として不正
         getDiminishedRadixComplement = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
@@ -597,20 +597,20 @@ End Function
 '    不要な0(整数部は左側の0、小数部は右側の0)を取り除くかどうか
 '    TRUEを指定して小数部が全て0の場合、小数部は空文字を格納する
 '
-Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte, ByVal remove0 As Boolean, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
+Private Function separateToIntAndFrc(ByVal baseNNumericStr As String, ByVal radix As Byte, ByVal remove0 As Boolean, ByRef intPrt As String, ByRef frcPrt, ByRef isMinus As Boolean) As Variant
     
     Dim retOfCheckBaseNNumber As Long
     Dim idxOfDot As Long
     Dim stsOfSub As Variant
-    Dim lenOfPntStr As Long
+    Dim lenOfBaseNNumericStr As Long
     Dim toRetIsMinus As Boolean
     Dim toRetIntPrt As String
     Dim toRetFrcPrt As String
     
-    lenOfPntStr = Len(pntStr)
+    lenOfBaseNNumericStr = Len(baseNNumericStr)
     
     'n進値として正しいかチェック&符号判定&小数点位置取得
-    retOfCheckBaseNNumber = checkBaseNNumber(pntStr, radix, toRetIsMinus, idxOfDot, stsOfSub)
+    retOfCheckBaseNNumber = checkBaseNNumber(baseNNumericStr, radix, toRetIsMinus, idxOfDot, stsOfSub)
     If IsError(stsOfSub) Then 'n進値として不正
         separateToIntAndFrc = stsOfSub 'checkBaseNNumberのエラーコードを返す
         Exit Function
@@ -626,12 +626,12 @@ Private Function separateToIntAndFrc(ByVal pntStr As String, ByVal radix As Byte
     
     '抽出
     If (idxOfDot = 0) Then '小数部の記載がない場合
-        toRetIntPrt = Mid(pntStr, stIdxOfIntPrt, (lenOfPntStr - stIdxOfIntPrt) + 1)
+        toRetIntPrt = Mid(baseNNumericStr, stIdxOfIntPrt, (lenOfBaseNNumericStr - stIdxOfIntPrt) + 1)
         toRetFrcPrt = ""
         
     Else '小数部あり
-        toRetIntPrt = Mid(pntStr, stIdxOfIntPrt, idxOfDot - stIdxOfIntPrt)
-        toRetFrcPrt = Right(pntStr, lenOfPntStr - idxOfDot)
+        toRetIntPrt = Mid(baseNNumericStr, stIdxOfIntPrt, idxOfDot - stIdxOfIntPrt)
+        toRetFrcPrt = Right(baseNNumericStr, lenOfBaseNNumericStr - idxOfDot)
         
     End If
     
@@ -678,7 +678,7 @@ End Function
 '    小数点文字位置
 '    小数点が無かった場合0
 '
-Private Function checkBaseNNumber(ByVal pntStr As String, ByVal radix As Byte, ByRef isMinus As Boolean, ByRef idxOfDot As Long, ByRef errCode As Variant) As Long
+Private Function checkBaseNNumber(ByVal baseNNumericStr As String, ByVal radix As Byte, ByRef isMinus As Boolean, ByRef idxOfDot As Long, ByRef errCode As Variant) As Long
     
     Dim minOkChar1 As Integer
     Dim maxOkChar1 As Integer
@@ -700,7 +700,7 @@ Private Function checkBaseNNumber(ByVal pntStr As String, ByVal radix As Byte, B
         
     End If
     
-    lpMx = Len(pntStr)
+    lpMx = Len(baseNNumericStr)
     
     If (lpMx = 0) Then
         errCode = CVErr(xlErrNull) '#NULL!を格納する
@@ -725,7 +725,7 @@ Private Function checkBaseNNumber(ByVal pntStr As String, ByVal radix As Byte, B
     End If
     
     '符号存在チェック
-    If (Left(pntStr, 1) = "-") Then '符号は(-)
+    If (Left(baseNNumericStr, 1) = "-") Then '符号は(-)
         isMinus = True
         stCnt = 2
         
@@ -741,7 +741,7 @@ Private Function checkBaseNNumber(ByVal pntStr As String, ByVal radix As Byte, B
     numOfDigits = 0
     For cnt = stCnt To lpMx
         
-        ch = Mid(pntStr, cnt, 1)
+        ch = Mid(baseNNumericStr, cnt, 1)
         chCode = Asc(ch)
         
         If (chCode < minOkChar1) Or (maxOkChar1 < chCode) Then  '文字は0~9いずれでもない
@@ -1619,6 +1619,5 @@ Private Function invertStringArray(ByRef srcArr() As String) As String()
     invertStringArray = retArr
     
 End Function
-
 
 
