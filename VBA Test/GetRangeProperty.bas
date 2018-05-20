@@ -1,4 +1,4 @@
-Attribute VB_Name = "getRangeProperty"
+Attribute VB_Name = "GetRangeProperty"
 Public Function getText(ByVal rng As Range) As Variant
     
     getText = rng.Text
