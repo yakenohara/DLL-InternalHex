@@ -124,7 +124,14 @@ Private Function callConvDecStrToOperandAndGetInternalHex(ByVal str As String, B
         ret = CVErr(xlErrValue) '#VALUE!を返す
     
     ElseIf (wroteLen < 0) Then 'dllが異常値を返却
-        ret = CVErr(xlErrNum) '#NUM!を返す
+        
+        If (wroteLen = -3) Then '数値ではなかった
+            ret = CVErr(xlErrNum) '#NUM!を返す
+            
+        Else '上記以外のエラー(メモリ不足等)
+            ret = CVErr(xlErrValue) '#VALUE!を返す
+            
+        End If
         
         
     Else 'dllは正常終了
@@ -257,7 +264,17 @@ Private Function callOperateArithmeticByInternalHex(ByVal firstValue As String, 
         
         
     ElseIf (wroteLen <= 0) Then 'dllに対する引き数異常の場合
-        ret = CVErr(xlErrValue) '#VALUE!を返却
+    
+        If (wroteLen = -1) Or (wroteLen = -2) Then 'val1かval2がオペランドに入れられない文字列
+            ret = CVErr(xlErrNum) '#NUM!を返却
+            
+        ElseIf (wroteLen = -7) Then
+            ret = CVErr(xlErrDiv0) '#DIV/0!を返却
+            
+        Else '上記以外のエラー(メモリ不足等)
+            ret = CVErr(xlErrValue) '#VALUE!を返却
+            
+        End If
         
     Else
         ret = Left(ans, wroteLen)

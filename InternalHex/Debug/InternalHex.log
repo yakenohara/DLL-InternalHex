@@ -1,1 +1,4 @@
-﻿  InternalHex.vcxproj -> D:\DLL-InternalHex\Debug\InternalHex_x86.dll
+﻿  InternalHex.cpp
+  LINK : 前回のインクリメンタル リンクで D:\DLL-InternalHex\Debug\InternalHex_x86.dll が見つからなかったか、ビルドされませんでした。フル リンクを行います。
+     ライブラリ D:\DLL-InternalHex\Debug\InternalHex_x86.lib とオブジェクト D:\DLL-InternalHex\Debug\InternalHex_x86.exp を作成中
+  InternalHex.vcxproj -> D:\DLL-InternalHex\Debug\InternalHex_x86.dll

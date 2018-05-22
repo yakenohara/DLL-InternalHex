@@ -135,6 +135,7 @@ __declspec (dllexport) int WINAPI getSizeOfOperandExp(int operandType) {
 //-4:operandTypeが不正
 //-5:operateTypeが不正
 //-6:メモリ不足
+//-7:整数型オペランドによる0除算
 //
 __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, char* val2Str, char* ansStr, int lenOfAns, int operandType, int operateType) {
 
@@ -148,10 +149,12 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 
 	int retOfSetInternalHexToOperand;
 
-	char*   generatedHexStr;   //生成Hex文字列
+	char* generatedHexStr;   //生成Hex文字列
 	unsigned char    lenOfGeneratedStr; //生成Hex文字列のbyte長
 
-	
+	char is0Divide;
+
+
 	//引数チェック
 	if (operandType < MIN_OF_TYPE || MAX_OF_TYPE < operandType) {
 		return -4;
@@ -159,7 +162,7 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 	if (operateType < OPERATE_TYPE_ADDITION || OPERATE_TYPE_DIVISION < operateType) {
 		return -5;
 	}
-	
+
 	//変数格納領域確保
 	requiredSize = getSizeOfOperand(operandType); //必要バイト数取得
 	requiredLenOfToWrite = requiredSize * 2;
@@ -175,11 +178,14 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 
 	val2Ope = (void*)malloc(requiredSize);
 	if (val2Ope == NULL) { //メモリ確保失敗
+		free(val1Ope);
 		return -6;
 	}
 
 	ansOpe = (void*)malloc(requiredSize);
 	if (ansOpe == NULL) { //メモリ確保失敗
+		free(val1Ope);
+		free(val2Ope);
 		return -6;
 	}
 
@@ -187,6 +193,9 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 	retOfSetInternalHexToOperand = setInternalHexToOperand(val1Str, val1Ope, operandType);
 
 	if (retOfSetInternalHexToOperand != 0) { //格納結果確認
+		free(val1Ope);
+		free(val2Ope);
+		free(ansOpe);
 		return -1;
 	}
 
@@ -194,13 +203,17 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 	retOfSetInternalHexToOperand = setInternalHexToOperand(val2Str, val2Ope, operandType);
 
 	if (retOfSetInternalHexToOperand != 0) { //格納結果確認
+		free(val1Ope);
+		free(val2Ope);
+		free(ansOpe);
 		return -2;
 	}
 
 	//演算
+	is0Divide = 0;
 	switch (operandType) {
 	case TYPE_DOUBLE:
-		
+
 		switch (operateType) {
 		case OPERATE_TYPE_ADDITION:
 			(*(double*)ansOpe) = (*(double*)val1Ope) + (*(double*)val2Ope);
@@ -222,7 +235,7 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 		break;
 
 	case TYPE_FLOAT:
-		
+
 		switch (operateType) {
 		case OPERATE_TYPE_ADDITION:
 			(*(float*)ansOpe) = (*(float*)val1Ope) + (*(float*)val2Ope);
@@ -256,7 +269,12 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 			(*(long*)ansOpe) = (*(long*)val1Ope) * (*(long*)val2Ope);
 			break;
 		case OPERATE_TYPE_DIVISION:
-			(*(long*)ansOpe) = (*(long*)val1Ope) / (*(long*)val2Ope);
+			if ((*(long*)val2Ope) == 0) { //0除算チェック
+				is0Divide = 1;
+			}
+			else {
+				(*(long*)ansOpe) = (*(long*)val1Ope) / (*(long*)val2Ope);
+			}
 			break;
 
 		default: //引き数チェックで弾いているので、このルートは発生し得ない
@@ -266,20 +284,25 @@ __declspec (dllexport) int WINAPI operateArithmeticByInternalHex(char* val1Str, 
 		break;
 
 	default: //変数型が不明。
-		     //引き数チェックで弾いているので、このルートは発生し得ない
+			 //引き数チェックで弾いているので、このルートは発生し得ない
 		break;
 
 	}
 
-	//内部表現取得
-	generatedHexStr = getInternalHexFromOperand((unsigned char*)ansOpe, requiredSize, &lenOfGeneratedStr);
+	generatedHexStr = NULL;
+	if (is0Divide == 0) { //0除算ではなかった
+		generatedHexStr = getInternalHexFromOperand((unsigned char*)ansOpe, requiredSize, &lenOfGeneratedStr); //内部表現取得
+	}
 
 	//開放
 	free(val1Ope);
 	free(val2Ope);
 	free(ansOpe);
 
-	if (generatedHexStr == NULL) { //メモリ不足
+	if(is0Divide){ //0除算
+		return -7;
+
+	} else if(generatedHexStr == NULL) { //メモリ不足
 		return -6;
 	
 	}
