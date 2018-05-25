@@ -51,7 +51,6 @@ Private Declare Function getSizeOfOperandExp _
 
 '定数
 Const BUF_SIZE As Long = 255 'バッファ文字列長
-Const DLL_NAME As String = "getInternalHexFromDecStr.dll" 'dll名
 
 Dim wsh As Object 'chdir用
 
